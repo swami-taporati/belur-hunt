@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Belur Temple Scavenger Hunt</title>
+   <style>
+    /* ROYAL STONE THEME */
+    :root {
+        --gold: #d4af37;        /* Royal Gold */
+        --dark-stone: #2c2c2c;  /* Polished Slate */
+        --light-stone: #f4f1ea; /* Uncarved Soapstone */
+        --accent: #b8860b;      /* Ancient Bronze */
+        --success: #2e7d32;     /* Forest Green */
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--light-stone);
+        color: var(--dark-stone);
+        line-height: 1.6;
+        margin: 0;
+        padding: 0;
+    }
+
+    header {
+        background: linear-gradient(135deg, var(--dark-stone) 0%, #1a1a1a 100%);
+        color: var(--gold);
+        padding: 40px 20px;
+        text-align: center;
+        border-bottom: 5px solid var(--gold);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+
+    h1 {
+        margin: 0;
+        font-size: 2.2em;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .mission-header {
+        background: white;
+        margin: 20px auto;
+        padding: 20px;
+        max-width: 800px;
+        border-radius: 8px;
+        border-left: 10px solid var(--gold);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .progress-container {
+        position: sticky;
+        top: 0;
+        background: white;
+        padding: 15px;
+        z-index: 100;
+        border-bottom: 2px solid var(--gold);
+        text-align: center;
+        font-weight: bold;
+    }
+
+    .progress-bar {
+        height: 12px;
+        background: #e0e0e0;
+        border-radius: 6px;
+        margin-top: 8px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: var(--gold);
+        width: 0%;
+        transition: width 0.5s ease;
+    }
+
+    .section-title {
+        background: var(--dark-stone);
+        color: var(--gold);
+        padding: 15px 25px;
+        margin-top: 40px;
+        font-size: 1.4em;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .quest-card {
+        background: white;
+        margin: 15px auto;
+        max-width: 850px;
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .quest-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    }
+
+    .quest-card.completed {
+        border: 2px solid var(--success);
+        background-color: #f1f8e9;
+    }
+
+    .card-header {
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        cursor: pointer;
+        background: #fafafa;
+        border-bottom: 1px solid #eee;
+    }
+
+    .checkbox {
+        width: 30px;
+        height: 30px;
+        border: 2px solid var(--gold);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: transparent;
+        transition: all 0.3s;
+        flex-shrink: 0;
+    }
+
+    .completed .checkbox {
+        background: var(--success);
+        border-color: var(--success);
+        color: white;
+    }
+
+    .completed .checkbox::after {
+        content: "✓";
+    }
+
+    .card-body {
+        padding: 20px;
+        display: none; /* Controlled by JS toggle */
+    }
+
+    .label {
+        color: var(--accent);
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 0.8em;
+        display: block;
+        margin-top: 10px;
+    }
+
+    .did-you-know {
+        background: #fff3e0;
+        border: 1px dashed var(--accent);
+        padding: 25px;
+        margin: 40px auto;
+        max-width: 800px;
+        border-radius: 12px;
+    }
+
+    footer {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+        font-size: 0.9em;
+    }
+</style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏛️ Exploring Stone: The Belur Adventure</h1>
+            <div class="mission-info">
+                <p><strong>Mission:</strong> Decode the stories carved into the rock 900 years ago</p>
+                <p><strong>Location:</strong> Chennakeshava Temple, Belur</p>
+                <p><strong>Date:</strong> Saturday, Dec 20, 2025</p>
+            </div>
+        </div>
+
+        <div class="team-info">
+            <input type="text" id="teamName" placeholder="Team Name">
+            <input type="text" id="teacher" placeholder="Teacher In-Charge">
+            <input type="text" id="members" placeholder="Team Members (comma separated)">
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressBar">0 / 20</div>
+        </div>
+
+        <div class="completion-message" id="completionMessage">
+            <h2>🎉 Congratulations, Explorers! 🎉</h2>
+            <p>You've discovered all 20 treasures of Belur Temple!</p>
+            <p>You are now official Stone Story Decoders!</p>
+        </div>
+
+        <div class="content">
+            <!-- Part 1: The Base -->
+            <div class="section">
+                <div class="section-title">Part 1: The Base (Walk around the outside)</div>
+
+                <div class="item" data-id="1">
+                    <div class="item-header">
+                        <div class="checkbox"></div>
+                        <div class="item-title">1. The Boy & The Tiger</div>
+                    </div>
+                    <div class="item-content">
+                        <span class="label label-find">FIND</span>
+                        <p class="item-text">The statue of a boy fighting a lion (or tiger).</p>
+                        <span class="label label-fact">THE STORY</span>
+                        <p class="item-text">A teacher yelled "Poy Sala!" (Strike, Sala!) to this boy. He fought the tiger, won, and started the Hoysala dynasty. It's like their superhero logo!</p>
+                    </div>
+                </div>
+
+                <div class="item" data-id="2">
+                    <div class="item-header">
+                        <div class="checkbox"></div>
+                        <div class="item-title">2. The Weight Lifters</div>
+                    </div>
+                    <div class="item-content">
+                        <span class="label label-find">FIND</span>
+                        <p class="item-text">The very bottom row of the temple walls. It is a long line of elephants.</p>
+                        <span class="label label-challenge">CHALLENGE</span>
+                        <p class="item-text">Walk along the row. Can you find two elephants that look exactly the same? (Spoiler: The artists made every single one different!)</p>
+                        <span class="label label-fact">FACT</span>
+                        <p class="item-text">There are 650 elephants holding up the temple.</p>
+                    </div>
+                </div>
+
+                <div class="item" data-id="3">
+                    <div class="item-header">
+                        <div class="checkbox"></div>
+                        <div class="item-title">3. The Mash-up Monster (Makara)</div>
+                    </div>
+                    <div class="item-content">
+                        <span class="label label-find">FIND</span>
+                        <p class="item-text">A creature with a Crocodile's mouth, an Elephant's trunk, a Lion's paws, and a Peacock's tail.</p>
+                        <span class="label label-clue">CLUE</span>
+                        <p class="item-text">It's usually found near the elephants or doorways. It represents the power of water.</p>
+                    </div>
+                </div>
+
+                <div class="item" data-id="4">
+                    <div class="item-header">
+                        <div class="checkbox"></div>
+                        <div class="item-title">4. The War Horses</div>
+                    </div>
+                    <div class="item-content">
+                        <span class="label label-find">FIND</span>
+                        <p class="item-text">The row of carvings showing horses ready for battle.</p>
+                        <span class="label label-clue">LOOK CLOSER</span>
+                        <p class="item-text">Look at the riders' feet. They are using stirrups and boots—tech that was very advanced for that time!</p>
+                    </div>
+                </div>
+
+                <div class="item" data-id="5">
+                    <div class="item-header">
+                        <div class="checkbox"></div>
+                        <div class="item-title">5. The Lion Faces</div>
+                    </div>
+                    <div class="item-content">
+                        <span class="label label-find">FIND</span>
+                        <p class="item-text">The row of scary lion faces staring at you.</p>
+                        <span class="label label-challenge">COUNT</span>
+                        <p class="item-text">How many can you count in 30 seconds?</p>
+                        <div class="input-box">
+                            <input type="number" placeholder="Enter count" id="lionCount">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Part 2: The Stone People -->
+            <div class="section">
+                <div class="section-title">Part 2: The Stone People (Look up at the angled statues)</div>
+
+                <div class="item" data-id="6">
+                    <div class="item-header">
+                        <div class="checkbox"></div>
+                        <div class="item-title">6. The Selfie Queen (Darpana Sundari)</div>
+                    </div>
+                    <div class="item-content">
+                        <span class="label label-find">FIND</span>
+                        <p class="item-text">The most famous lady here. She is holding a mirror and checking her style.</p>
+                        <span class="label label-clue">DETAIL</span>
+                        <p class="item-text">Notice how she stands. Is she stiff like a robot, or relaxed?</p>
+                        <span class="label label-fact">SCIENCE</span>
+                        <p class="item-text">The stone (Soapstone) is soft when dug up but turns hard as steel over time!</p>
+                    </div>
+                </div>
+
+                <div class="item" data-id="7">
+                    <div class="item-header">
+                        <div class="checkbox"></div>
+                        <div class="item-title">7. The Monkey Attack!</div>
+                    </div>
+                    <div class="item-content">
+                        <span class="label label-find">FIND</span>
+                        <p class="item-text">A lady looking annoyed because a mischievous monkey is pulling her saree! She is trying to shoo it away with a branch.</p>
+                        <span class="label label-fact">FUN FACT</span>
+                        <p class="item-text">Even 900 years ago, monkeys were causing trouble!</p>
+                    </div>
+                </div>
+
+                <div class="item" data-id="8">
+                    <div class="item-header">
+                        <div class="checkbox"></div>
+                        <div class="item-title">8. The Parrot Whisperer</div>
+                    </div>
+                    <div class="item-content">
+                        <span class="label label-find">FIND</span>
+                        <p class="item-text">A lady with a parrot sitting on her arm. She is talking to it.</p>
+                        <span class="label label-fact">IMPOSSIBLE STONE</span>
+                        <p class="item-text">The bangles on her wrist are carved so perfectly that (if you were allowed to touch them) they could actually spin around her arm!</p>
+                    </div>
+                </div>
+
+                <div class="item" data-id="9">
+                    <div class="item-header">
+                        <div class="checkbox"></div>
+                        <div class="item-title">9. The Huntress</div>
+                    </div>
+                    <div class="item-content">
+                        <span class="label label-find">FIND</span>
+                        <p class="item-text">A lady holding a bow and arrow. She isn't dancing; she is aiming at a target.</p>
+                        <span class="label label-fact">VIBE</span>
+                        <p class="item-text">She's the ancient version of Katniss Everdeen.</p>
+                    </div>
+                </div>
+
+                <div class="item" data-id="10">
+                    <div class="item-header">
+                        <div class="checkbox"></div>
+                        <div class="item-title">10. The Lizard Surprise</div>
+                    </div>
+                    <div class="item-content">
+                        <span class="label label-challenge">SUPER CHALLENGE</span>
+                        <p class="item-text">Look at the back of the "Mirror Lady" or the figures right next to her. Can you spot a lizard carved on a fruit or leaf?</p>
+                        <span class="label label-fact">LEGEND</span>
+                        <p class="item-text">It's a secret "easter egg" left by the artist.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Part 3: Inside the Mystery Hall -->
+            <div class="section">
+                <div class="section-title">Part 3: Inside the Mystery Hall</div>
+
+                <div class="item" data-id="11">
+                    <div class="item-header">
+                        <div class="checkbox"></div>
+                        <div class="item-title">11. The Spotlight Pillar (Mohini Pillar)</div>
+                    </div>
+                    <div class="item-content">
+                        <span class="label label-find">FIND</span>
+                        <p class="item-text">The pillar that is incredibly smooth, black, and shiny.</p>
+                        <span class="label label-challenge">TEST</span>
+                        <p class="item-text">Stand near it. Can you see your own reflection in the stone?</p>
+                        <span class="label label-fact">FACT</span>
+                        <p class="item-text">No modern machine has been able to polish stone this well!</p>
+                    </div>
+                </div>
+
+                <div class="item" data-id="12">
+                    <div class="item-header">
+                        <div class="checkbox"></div>
+                        <div class="item-title">12. The Spinner (Narasimha Pillar)</div>
+                    </div>
+                    <div class="item-content">
+                        <span class="label label-find">FIND</span>
+                        <p class="item-text">The pillar covered in tiny, detailed red/brown carvings.</p>
+                        <span class="label label-fact">SECRET</span>
+                        <p class="item-text">This pillar has ball bearings inside. Long ago, people could rotate this huge stone pillar with just one finger!</p>
+                    </div>
+                </div>
+
+                <div class="item" data-id="13">
+                    <div class="item-header">
+                        <div class="checkbox"></div>
+                        <div class="item-title">13. The Gravity Defier</div>
+                    </div>
+                    <div class="item-content">
+                        <span class="label label-find">FIND</span>
+                        <p class="item-text">A tall pillar (either in the courtyard or the hall) that stands on only three corners.</p>
+                        <span class="label label-fact">THE TRICK</span>
+                        <p class="item-text">You can slide a piece of paper or a handkerchief under the fourth corner. It's hanging in the air!</p>
+                    </div>
+                </div>
+
+                <div class="item" data-id="14">
+                    <div class="item-header">
+                        <div class="checkbox"></div>
+                        <div class="item-title">14. The Giant Kaleidoscope</div>
+                    </div>
+                    <div class="item-content">
+                        <span class="label label-find">FIND</span>
+                        <p class="item-text">Stand in the dead center of the hall and look Straight Up.</p>
+                        <span class="label label-clue">DESCRIBE IT</span>
+                        <p class="item-text">It looks like a giant inverted flower.</p>
+                        <span class="label label-fact">NAME</span>
+                        <p class="item-text">This is the Bhuvaneshwari ceiling.</p>
+                    </div>
+                </div>
+
+                <div class="item" data-id="15">
+                    <div class="item-header">
+                        <div class="checkbox"></div>
+                        <div class="item-title">15. The Angry Avatar</div>
+                    </div>
+                    <div class="item-content">
+                        <span class="label label-find">FIND</span>
+                        <p class="item-text">A carving of a god ripping open a demon. This is Narasimha (Half-Lion, Half-Man).</p>
+                        <span class="label label-fact">MOOD</span>
+                        <p class="item-text">Most statues here are smiling, but this one is fierce!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Part 4: Tiny Details -->
+            <div class="section">
+                <div class="section-title">Part 4: Tiny Details (For Eagle Eyes)</div>
+
+                <div class="item" data-id="16">
+                    <div class="item-header">
+                        <div class="checkbox"></div>
+                        <div class="item-title">16. The Fly on the Corn</div>
+                    </div>
+                    <div class="item-content">
+                        <span class="label label-find">FIND</span>
+                        <p class="item-text">Look for a small statue of a lady holding a corn cob.</p>
+                        <span class="label label-challenge">ZOOM IN</span>
+                        <p class="item-text">If you have 20/20 vision, spot the tiny housefly sitting on the corn kernel.</p>
+                        <span class="label label-fact">WOW</span>
+                        <p class="item-text">Imagine carving a fly out of rock without breaking it!</p>
+                    </div>
+                </div>
+
+                <div class="item" data-id="17">
+                    <div class="item-header">
+                        <div class="checkbox"></div>
+                        <div class="item-title">17. The Artist's Autograph</div>
+                    </div>
+                    <div class="item-content">
+                        <span class="label label-find">FIND</span>
+                        <p class="item-text">Look at the feet of the statues. Can you see squiggly writing?</p>
+                        <span class="label label-fact">FACT</span>
+                        <p class="item-text">Those are signatures! The artists (like "Dasoja" or "Chavana") signed their work, just like painters do today.</p>
+                    </div>
+                </div>
+
+                <div class="item" data-id="18">
+                    <div class="item-header">
+                        <div class="checkbox"></div>
+                        <div class="item-title">18. The Skull Necklace</div>
+                    </div>
+                    <div class="item-content">
+                        <span class="label label-find">FIND</span>
+                        <p class="item-text">A warrior or guardian wearing a necklace made of skulls.</p>
+                        <span class="label label-fact">VIBE</span>
+                        <p class="item-text">A bit spooky, right?</p>
+                    </div>
+                </div>
+
+                <div class="item" data-id="19">
+                    <div class="item-header">
+                        <div class="checkbox"></div>
+                        <div class="item-title">19. The Food Chain</div>
+                    </div>
+                    <div class="item-content">
+                        <span class="label label-find">FIND</span>
+                        <p class="item-text">A carving showing a snake eating a frog, while a peacock eats the snake...</p>
+                        <span class="label label-fact">LESSON</span>
+                        <p class="item-text">It shows the circle of life.</p>
+                    </div>
+                </div>
+
+                <div class="item" data-id="20">
+                    <div class="item-header">
+                        <div class="checkbox"></div>
+                        <div class="item-title">20. The Frog Temple</div>
+                    </div>
+                    <div class="item-content">
+                        <span class="label label-find">FIND</span>
+                        <p class="item-text">Go to the smaller temple behind the main one. It is named Kappe Chennigaraya.</p>
+                        <span class="label label-fact">TRANSLATION</span>
+                        <p class="item-text">"Kappe" means Frog in Kannada! Legend says a frog was found alive inside a stone here.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fun Facts -->
+            <div class="fun-facts">
+                <h3>🎯 Did You Know? (Fun Facts to Share)</h3>
+                <p><strong>No Cement:</strong> The whole temple is held together by weight and balance. No glue, no mortar!</p>
+                <p><strong>103 Years:</strong> That's how long it took to build. If they started in 2025, they wouldn't finish until the year 2128!</p>
+                <p><strong>Stolen Designs:</strong> The jewelry carved on the statues is so accurate that jewelers today use photos of these statues to make real gold necklaces!</p>
+            </div>
+        </div>
+    </div>
+
+  <script>
+        const items = document.querySelectorAll('.item');
+        const progressBar = document.getElementById('progressBar');
+        const completionMessage = document.getElementById('completionMessage');
+        const totalItems = 20;
+        let completedCount = 0;
+
+        // Load saved state from Local Storage
+        let savedState = JSON.parse(localStorage.getItem('belurHunt') || '{}');
+        
+        // Function to populate the UI with saved data
+        function loadUI() {
+            document.getElementById('teamName').value = savedState.teamName || '';
+            document.getElementById('teacher').value = savedState.teacher || '';
+            document.getElementById('members').value = savedState.members || '';
+            document.getElementById('lionCount').value = savedState.lionCount || '';
+
+            completedCount = 0;
+            items.forEach(item => {
+                const id = item.dataset.id;
+                if (savedState[`item${id}`]) {
+                    item.classList.add('completed');
+                    completedCount++;
+                } else {
+                    item.classList.remove('completed');
+                }
+            });
+            updateProgress();
+        }
+
+        // Initialize items and click listeners
+        items.forEach(item => {
+            const id = item.dataset.id;
+            item.querySelector('.item-header').addEventListener('click', function() {
+                item.classList.toggle('completed');
+                if (item.classList.contains('completed')) {
+                    completedCount++;
+                    savedState[`item${id}`] = true;
+                } else {
+                    completedCount--;
+                    delete savedState[`item${id}`];
+                }
+                updateProgress();
+                saveState();
+            });
+        });
+
+        // Save inputs automatically
+        ['teamName', 'teacher', 'members', 'lionCount'].forEach(id => {
+            document.getElementById(id).addEventListener('input', function() {
+                savedState[id] = this.value;
+                saveState();
+            });
+        });
+
+        function updateProgress() {
+            const percentage = (completedCount / totalItems) * 100;
+            progressBar.style.width = percentage + '%';
+            progressBar.textContent = `${completedCount} / ${totalItems}`;
+            if (completedCount === totalItems) {
+                completionMessage.classList.add('show');
+            } else {
+                completionMessage.classList.remove('show');
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('belurHunt', JSON.stringify(savedState));
+        }
+
+        // Submission function (Corrected to include Member Names)
+        function submitResults() {
+            const team = document.getElementById('teamName').value || "Unnamed Team";
+            const teacher = document.getElementById('teacher').value || "No Teacher Assigned";
+            const memberList = document.getElementById('members').value || "Not specified";
+            const lionVal = document.getElementById('lionCount').value || "0";
+            
+            const summary = `🏆 BELUR MISSION REPORT 🏆\n` +
+                          `--------------------------\n` +
+                          `Team: ${team}\n` +
+                          `Teacher: ${teacher}\n` +
+                          `Members: ${memberList}\n` +
+                          `--------------------------\n` +
+                          `Score: ${completedCount}/${totalItems}\n` +
+                          `Lions Counted: ${lionVal}`;
+            
+            if (navigator.share) {
+                navigator.share({ title: 'Belur Hunt Results', text: summary })
+                .catch(err => console.log("Share failed:", err));
+            } else {
+                navigator.clipboard.writeText(summary);
+                alert("Results copied to clipboard! Paste them to your teacher.\n\n" + summary);
+            }
+        }
+
+        // Clear data function
+        function resetMission() {
+            if (confirm("WARNING: This will delete ALL progress for the current team. Start fresh?")) {
+                localStorage.removeItem('belurHunt');
+                savedState = {};
+                loadUI();
+                window.scrollTo(0, 0);
+                alert("All data cleared. Ready for a new team!");
+            }
+        }
+
+        // UI Buttons Container
+        const buttonContainer = document.createElement('div');
+        buttonContainer.style = "margin-top: 40px; display: flex; flex-direction: column; gap: 15px; padding-bottom: 40px;";
+        document.querySelector('.content').appendChild(buttonContainer);
+
+        // Add Submit Button (Main Action)
+        const submitBtn = document.createElement('button');
+        submitBtn.innerHTML = "📤 Submit Mission Results";
+        submitBtn.style = "padding: 22px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 12px; font-size: 1.3em; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2);";
+        submitBtn.onclick = submitResults;
+        buttonContainer.appendChild(submitBtn);
+
+        // Add Reset Button (Secondary Action)
+        const resetBtn = document.createElement('button');
+        resetBtn.innerHTML = "Reset Everything";
+        resetBtn.style = "padding: 10px; background: transparent; color: #999; border: 1px solid #ccc; border-radius: 8px; font-size: 0.8em; cursor: pointer; align-self: center; margin-top: 10px;";
+        resetBtn.onclick = resetMission;
+        buttonContainer.appendChild(resetBtn);
+
+        loadUI();
+    </script>
+</body>
+</html>
