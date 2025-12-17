@@ -1,0 +1,15 @@
+{
+  "name": "Belur Temple Quest",
+  "short_name": "BelurHunt",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#2c2c2c",
+  "theme_color": "#d4af37",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/4341/4341507.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
