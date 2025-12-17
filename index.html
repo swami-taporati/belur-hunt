@@ -621,34 +621,41 @@
         </div>
     </div>
 
-    <script>
-        <script>
+   <script>
         const items = document.querySelectorAll('.item');
         const progressBar = document.getElementById('progressBar');
         const completionMessage = document.getElementById('completionMessage');
         const totalItems = 20;
         let completedCount = 0;
 
-        // Load saved state
-        const savedState = JSON.parse(localStorage.getItem('belurHunt') || '{}');
+        // Load saved state from Local Storage
+        let savedState = JSON.parse(localStorage.getItem('belurHunt') || '{}');
         
-        // Load team info
-        document.getElementById('teamName').value = savedState.teamName || '';
-        document.getElementById('teacher').value = savedState.teacher || '';
-        document.getElementById('members').value = savedState.members || '';
-        document.getElementById('lionCount').value = savedState.lionCount || '';
+        // Function to populate the UI with saved data
+        function loadUI() {
+            document.getElementById('teamName').value = savedState.teamName || '';
+            document.getElementById('teacher').value = savedState.teacher || '';
+            document.getElementById('members').value = savedState.members || '';
+            document.getElementById('lionCount').value = savedState.lionCount || '';
 
-        // Initialize items
+            completedCount = 0;
+            items.forEach(item => {
+                const id = item.dataset.id;
+                if (savedState[`item${id}`]) {
+                    item.classList.add('completed');
+                    completedCount++;
+                } else {
+                    item.classList.remove('completed');
+                }
+            });
+            updateProgress();
+        }
+
+        // Initialize items and click listeners
         items.forEach(item => {
             const id = item.dataset.id;
-            if (savedState[`item${id}`]) {
-                item.classList.add('completed');
-                completedCount++;
-            }
-
             item.querySelector('.item-header').addEventListener('click', function() {
                 item.classList.toggle('completed');
-                
                 if (item.classList.contains('completed')) {
                     completedCount++;
                     savedState[`item${id}`] = true;
@@ -656,7 +663,6 @@
                     completedCount--;
                     delete savedState[`item${id}`];
                 }
-                
                 updateProgress();
                 saveState();
             });
@@ -674,7 +680,6 @@
             const percentage = (completedCount / totalItems) * 100;
             progressBar.style.width = percentage + '%';
             progressBar.textContent = `${completedCount} / ${totalItems}`;
-            
             if (completedCount === totalItems) {
                 completionMessage.classList.add('show');
             } else {
@@ -686,57 +691,55 @@
             localStorage.setItem('belurHunt', JSON.stringify(savedState));
         }
 
-        // NEW: Submission function including Teacher Name
+        // Submission function
         function submitResults() {
             const team = document.getElementById('teamName').value || "Unnamed Team";
             const teacher = document.getElementById('teacher').value || "No Teacher Assigned";
-            const count = document.getElementById('lionCount').value || "Not counted";
-            const members = document.getElementById('members').value || "Not listed";
-            
             const summary = `🏆 BELUR MISSION REPORT 🏆\n` +
-                          `--------------------------\n` +
                           `Team: ${team}\n` +
-                          `Teacher In-Charge: ${teacher}\n` +
+                          `Teacher: ${teacher}\n` +
                           `Score: ${completedCount}/${totalItems}\n` +
-                          `Lion Statues Counted: ${count}\n` +
-                          `Members: ${members}`;
+                          `Lions: ${document.getElementById('lionCount').value}`;
             
             if (navigator.share) {
-                navigator.share({
-                    title: 'Belur Hunt Results',
-                    text: summary
-                }).catch(err => {
-                    console.log("Error sharing:", err);
-                });
+                navigator.share({ title: 'Belur Hunt Results', text: summary });
             } else {
-                // Fallback for browsers that don't support native sharing
                 navigator.clipboard.writeText(summary);
-                alert("Results copied to clipboard! Paste them into WhatsApp or Email to your teacher.\n\n" + summary);
+                alert("Results copied! Paste them to your teacher.");
             }
         }
 
-        // Add the styled Submit Button to the UI
+        // NEW: Clear data function
+        function resetMission() {
+            if (confirm("Are you sure? This will delete all progress for the current team!")) {
+                localStorage.removeItem('belurHunt');
+                savedState = {};
+                loadUI();
+                window.scrollTo(0, 0); // Scroll to top
+                alert("Mission cleared. Ready for a new team!");
+            }
+        }
+
+        // UI Buttons Container
+        const buttonContainer = document.createElement('div');
+        buttonContainer.style = "margin-top: 30px; display: flex; flex-direction: column; gap: 15px;";
+        document.querySelector('.content').appendChild(buttonContainer);
+
+        // Add Submit Button
         const submitBtn = document.createElement('button');
         submitBtn.innerHTML = "📤 Submit Mission Results";
-        submitBtn.style = `
-            width: 100%; 
-            padding: 20px; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-            color: white; 
-            border: none; 
-            border-radius: 12px; 
-            font-size: 1.2em; 
-            font-weight: bold;
-            cursor: pointer; 
-            margin-top: 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        `;
+        submitBtn.style = "padding: 20px; background: #764ba2; color: white; border: none; border-radius: 12px; font-size: 1.2em; font-weight: bold; cursor: pointer;";
         submitBtn.onclick = submitResults;
-        document.querySelector('.content').appendChild(submitBtn);
+        buttonContainer.appendChild(submitBtn);
 
-        // Initial progress update
-        updateProgress();
-    </script>
+        // Add Reset Button
+        const resetBtn = document.createElement('button');
+        resetBtn.innerHTML = "🔄 Reset & Start New Mission";
+        resetBtn.style = "padding: 12px; background: #f8f9fa; color: #dc3545; border: 2px solid #dc3545; border-radius: 12px; font-size: 0.9em; font-weight: bold; cursor: pointer;";
+        resetBtn.onclick = resetMission;
+        buttonContainer.appendChild(resetBtn);
+
+        loadUI();
     </script>
 </body>
 </html>
