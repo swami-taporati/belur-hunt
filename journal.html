@@ -6,27 +6,118 @@
     <title>Belur Temple Scavenger Hunt</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); overflow: hidden; }
-        .header { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 25px; text-align: center; }
-        .progress-container { background: #eee; height: 30px; position: sticky; top: 0; z-index: 100; border-bottom: 2px solid #ddd; }
-        .progress-bar { background: #4CAF50; height: 100%; width: 0%; transition: 0.4s; text-align: center; color: white; font-size: 14px; line-height: 30px; font-weight: bold; }
-        .rank-banner { background: #fff3cd; color: #856404; text-align: center; padding: 8px; font-weight: bold; font-size: 0.9em; border-bottom: 1px solid #ffeeba; }
-        .content { padding: 20px; }
-        .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #444; }
-        input[type="text"], textarea { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; }
-        .item { background: #f9f9f9; border: 2px solid #eee; border-radius: 12px; padding: 15px; margin-bottom: 12px; cursor: pointer; transition: 0.2s; }
-        .item.completed { background: #e8f5e9; border-color: #4CAF50; }
-        .item-header { display: flex; align-items: center; gap: 10px; font-weight: bold; color: #333; }
-        .checkbox { width: 24px; height: 24px; border: 2px solid #ccc; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: white; }
-        .completed .checkbox { background: #4CAF50; border-color: #4CAF50; }
-        .completed .checkbox::after { content: '✓'; color: white; }
-        .hint-text { font-size: 0.85em; color: #666; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #ccc; display: none; }
-        .item.show-hint .hint-text { display: block; }
-        .hint-btn { font-size: 0.75em; color: #764ba2; text-decoration: underline; margin-top: 5px; display: inline-block; }
-        .submit-btn { width: 100%; padding: 20px; background: #764ba2; color: white; border: none; border-radius: 12px; font-size: 1.2em; font-weight: bold; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-        .reset-btn { width: 100%; padding: 10px; background: transparent; color: #999; border: 1px solid #ccc; border-radius: 8px; font-size: 0.8em; margin-top: 15px; cursor: pointer; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .progress-sticky {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: #eee;
+            border-bottom: 2px solid #ddd;
+        }
+        .progress-bar {
+            height: 35px;
+            background: #4CAF50;
+            width: 0%;
+            transition: 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        .rank-bar {
+            background: #fff3cd;
+            color: #856404;
+            text-align: center;
+            padding: 5px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        .content { padding: 25px; }
+        .setup-box { background: #f8f9fa; padding: 20px; border-radius: 15px; margin-bottom: 25px; border: 1px solid #e9ecef; }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .item {
+            background: #f9f9f9;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .item.completed {
+            background: #e8f5e9;
+            border-color: #4CAF50;
+        }
+        .item-header { display: flex; align-items: center; gap: 12px; font-weight: 600; color: #333; }
+        .checkbox {
+            width: 26px;
+            height: 26px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            background: white;
+            flex-shrink: 0;
+        }
+        .completed .checkbox {
+            background: #4CAF50;
+            border-color: #4CAF50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .completed .checkbox::after { content: '✓'; color: white; font-weight: bold; }
+        .hint-btn { font-size: 0.75em; color: #764ba2; text-decoration: underline; margin-top: 8px; cursor: pointer; }
+        .hint-text { font-size: 0.85em; color: #666; font-style: italic; margin-top: 5px; display: none; }
+        .show-hint .hint-text { display: block; }
+        .btn-submit {
+            width: 100%;
+            padding: 20px;
+            background: #764ba2;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            margin-top: 20px;
+        }
+        .btn-reset {
+            width: 100%;
+            padding: 10px;
+            background: transparent;
+            color: #999;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-top: 15px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -34,126 +125,123 @@
 <div class="container">
     <div class="header">
         <h1>Belur Mission</h1>
-        <p>Temple Explorer Edition</p>
+        <p>Master the Temple Secrets</p>
     </div>
 
-    <div class="progress-container">
+    <div class="progress-sticky">
+        <div id="rankBar" class="rank-bar">Current Status: Novice Scout</div>
         <div id="progressBar" class="progress-bar">0 / 20</div>
     </div>
-    <div id="rankBanner" class="rank-banner">Rank: Novice Explorer</div>
 
     <div class="content">
-        <div class="input-group">
-            <label>Team Name</label>
-            <input type="text" id="teamName" placeholder="Enter team name...">
-        </div>
-        <div class="input-group">
-            <label>Teacher In-Charge</label>
-            <input type="text" id="teacher" placeholder="Enter teacher's name...">
-        </div>
-        <div class="input-group">
-            <label>Team Members</label>
-            <textarea id="members" rows="2" placeholder="List all students..."></textarea>
+        <div class="setup-box">
+            <input type="text" id="teamName" placeholder="Team Name">
+            <input type="text" id="teacher" placeholder="Teacher Name">
+            <textarea id="members" placeholder="Team Member Names..." rows="2"></textarea>
+            <input type="text" id="lionCount" placeholder="Count the Lions at the base...">
         </div>
 
         <div id="missionList"></div>
 
-        <button class="submit-btn" onclick="submitResults()">📤 Submit Final Report</button>
-        <button class="reset-btn" onclick="resetMission()">Reset Mission Data</button>
+        <button class="btn-submit" onclick="submitResults()">📤 Submit Report</button>
+        <button class="btn-reset" onclick="resetApp()">Reset All Data</button>
     </div>
 </div>
 
 <script>
-    const missionData = [
-        { name: "The Royal Emblem", hint: "A warrior (Sala) fighting a tiger. Found near the entrances." },
-        { name: "Gravity Pillar", hint: "It stands by its own weight. Try passing a thin paper underneath!" },
-        { name: "Charging Lions", hint: "Look at the very first row of animals at the bottom of the temple." },
-        { name: "Elephant Frieze", hint: "Look above the lions. Can you find two elephants that look identical? (Hint: You can't!)" },
-        { name: "Darpanasundari", hint: "The famous lady holding a mirror. She's a 'bracket figure' high up." },
-        { name: "The Drummer", hint: "A stone lady playing a traditional drum." },
-        { name: "Monkey & Scorpion", hint: "Look for a lady being teased by a monkey; a scorpion is near her feet." },
-        { name: "Rotating Pillar", hint: "The Narasimha Pillar inside. It's so smooth it was said to rotate!" },
-        { name: "Ceiling Lotus", hint: "Look at the ceiling in the main hall. It's a massive stone carving." },
-        { name: "Stone Lattice", hint: "Windows carved out of solid stone to let in light." },
-        { name: "Step Well", hint: "The 'Pushkarni' water tank in the temple compound." },
-        { name: "Horse Frieze", hint: "The row of galloping horses above the elephants." },
-        { name: "Mythical Makara", hint: "A creature made of 7 different animals! (Elephant trunk, Lion paws, etc.)" },
-        { name: "Smallest Ganesha", hint: "A tiny Ganesha carved near the base of the southern entrance." },
-        { name: "The Huntress", hint: "A lady aiming a bow at a bird high above." },
-        { name: "Shuko-Bhashini", hint: "A lady talking to a parrot sitting on her hand." },
-        { name: "Dancing Floor", hint: "The polished circular stone in the center where the Queen danced." },
-        { name: "Vishnu Avatar", hint: "Look for a wall carving of a Man-Lion (Narasimha) or Boar (Varaha)." },
-        { name: "Mohini Figure", hint: "The female avatar of Lord Vishnu, known for her beauty." },
-        { name: "Deepa Stambha", hint: "The tall lamp pillar standing in the courtyard." }
+    const missionItems = [
+        { name: "Royal Emblem", clue: "Search for a warrior (Sala) slaying a tiger near the entrances." },
+        { name: "Gravity Pillar", clue: "The tall stone pillar. Can you slide a piece of paper under it?" },
+        { name: "Charging Lions", clue: "The bottom-most row of animals on the temple walls." },
+        { name: "Elephant Frieze", clue: "Look just above the lions. No two elephants are exactly alike!" },
+        { name: "Darpanasundari", clue: "The 'Lady with a Mirror' bracket figure high up on the wall." },
+        { name: "The Drummer", clue: "A stone lady playing a traditional drum." },
+        { name: "Monkey & Scorpion", clue: "Look for a lady troubled by a monkey; a scorpion is near her feet." },
+        { name: "Rotating Pillar", clue: "The Narasimha Pillar inside. It's so smooth it once rotated!" },
+        { name: "Ceiling Lotus", clue: "Look directly up at the ceiling in the main hall." },
+        { name: "Stone Lattice", clue: "The stone windows carved to look like lace." },
+        { name: "Step Well", clue: "Find the geometric 'Pushkarni' water tank." },
+        { name: "Horse Frieze", clue: "The row of horses above the elephants." },
+        { name: "Mythical Makara", clue: "A creature with 7 animals combined! (Trunk, Paws, Tail, etc.)" },
+        { name: "Smallest Ganesha", clue: "A tiny carving near the base of the southern steps." },
+        { name: "The Huntress", clue: "A lady figure aiming a bow high up on the brackets." },
+        { name: "Shuko-Bhashini", clue: "Look for the stone lady talking to a parrot." },
+        { name: "Dancing Floor", clue: "The circular, polished stone in the center where the Queen danced." },
+        { name: "Vishnu Avatar", clue: "Look for Narasimha (Lion-man) on the wall panels." },
+        { name: "Mohini Figure", clue: "The beautiful female avatar of Lord Vishnu." },
+        { name: "Deepa Stambha", clue: "The tall lamp pillar standing in the courtyard." }
     ];
 
-    let state = JSON.parse(localStorage.getItem('belurHuntFinal') || '{}');
+    let state = JSON.parse(localStorage.getItem('belurFinalV6') || '{}');
 
-    function createList() {
-        const container = document.getElementById('missionList');
-        container.innerHTML = '';
-        let completedCount = 0;
+    function buildList() {
+        const list = document.getElementById('missionList');
+        list.innerHTML = '';
+        let completed = 0;
 
-        missionData.forEach((item, index) => {
-            const isDone = state[`item${index}`];
-            if (isDone) completedCount++;
+        missionItems.forEach((item, i) => {
+            const isDone = state[`item${i}`];
+            if(isDone) completed++;
 
             const div = document.createElement('div');
             div.className = `item ${isDone ? 'completed' : ''}`;
-            div.id = `item-${index}`;
+            div.id = `item-${i}`;
             div.innerHTML = `
-                <div class="item-header" onclick="toggleItem(${index})">
+                <div class="item-header" onclick="toggle(${i})">
                     <div class="checkbox"></div>
-                    <span>${index + 1}. ${item.name}</span>
+                    <span>${i+1}. ${item.name}</span>
                 </div>
-                <div class="hint-btn" onclick="toggleHint(${index}, event)">💡 Need a hint?</div>
-                <div class="hint-text">${item.hint}</div>
+                <div class="hint-btn" onclick="showHint(${i}, event)">💡 Need a clue?</div>
+                <div class="hint-text">${item.clue}</div>
             `;
-            container.appendChild(div);
+            list.appendChild(div);
         });
-
-        updateUI(completedCount);
+        updateProgress(completed);
     }
 
-    function toggleItem(index) {
-        state[`item${index}`] = !state[`item${index}`];
-        if (!state[`item${index}`]) delete state[`item${index}`];
+    function toggle(i) {
+        state[`item${i}`] = !state[`item${i}`];
+        if(!state[`item${i}`]) delete state[`item${i}`];
         save();
-        createList();
+        buildList();
     }
 
-    function toggleHint(index, event) {
-        event.stopPropagation();
-        document.getElementById(`item-${index}`).classList.toggle('show-hint');
+    function showHint(i, e) {
+        e.stopPropagation();
+        document.getElementById(`item-${i}`).classList.toggle('show-hint');
     }
 
     function save() {
         state.teamName = document.getElementById('teamName').value;
         state.teacher = document.getElementById('teacher').value;
         state.members = document.getElementById('members').value;
-        localStorage.setItem('belurHuntFinal', JSON.stringify(state));
+        state.lionCount = document.getElementById('lionCount').value;
+        localStorage.setItem('belurFinalV6', JSON.stringify(state));
     }
 
-    function updateUI(count) {
+    function updateProgress(count) {
         const bar = document.getElementById('progressBar');
+        const rank = document.getElementById('rankBar');
         bar.style.width = (count / 20 * 100) + '%';
-        bar.textContent = `${count} / 20`;
+        bar.textContent = `${count} / 20 Items Found`;
 
-        const banner = document.getElementById('rankBanner');
-        if (count < 5) banner.innerText = "Rank: Novice Explorer";
-        else if (count < 10) banner.innerText = "Rank: Apprentice Scout";
-        else if (count < 15) banner.innerText = "Rank: Master Archaeologist";
-        else if (count < 20) banner.innerText = "Rank: Temple Guardian";
-        else banner.innerText = "🏆 Rank: Legend of Belur";
+        if (count < 5) rank.innerText = "Status: Novice Scout";
+        else if (count < 10) rank.innerText = "Status: Temple Explorer";
+        else if (count < 15) rank.innerText = "Status: Master Archaeologist";
+        else if (count < 20) rank.innerText = "Status: Royal Guardian";
+        else rank.innerText = "🏆 Status: Legend of Belur";
     }
 
     function submitResults() {
-        const count = Object.keys(state).filter(k => k.startsWith('item')).length;
+        const score = Object.keys(state).filter(k => k.startsWith('item')).length;
         const summary = `🏆 BELUR MISSION REPORT 🏆\n` +
-                      `Team: ${document.getElementById('teamName').value || 'N/A'}\n` +
-                      `Teacher: ${document.getElementById('teacher').value || 'N/A'}\n` +
-                      `Status: ${document.getElementById('rankBanner').innerText}\n` +
-                      `Score: ${count}/20`;
+            `Team: ${document.getElementById('teamName').value || '---'}\n` +
+            `Teacher: ${document.getElementById('teacher').value || '---'}\n` +
+            `Members: ${document.getElementById('members').value || '---'}\n` +
+            `Lions Counted: ${document.getElementById('lionCount').value || '---'}\n` +
+            `--------------------------\n` +
+            `Score: ${score}/20\n` +
+            `Rank: ${document.getElementById('rankBar').innerText}`;
         
         if (navigator.share) {
             navigator.share({ title: 'Belur Report', text: summary });
@@ -163,23 +251,22 @@
         }
     }
 
-    function resetMission() {
-        if(confirm("Are you sure? This will wipe all progress for this team!")) {
-            localStorage.removeItem('belurHuntFinal');
+    function resetApp() {
+        if(confirm("Wipe all data and start a new team mission?")) {
+            localStorage.removeItem('belurFinalV6');
             state = {};
             location.reload();
         }
     }
 
-    // Load inputs
-    document.getElementById('teamName').value = state.teamName || '';
-    document.getElementById('teacher').value = state.teacher || '';
-    document.getElementById('members').value = state.members || '';
-    ['teamName', 'teacher', 'members'].forEach(id => {
-        document.getElementById(id).addEventListener('input', save);
+    // Auto-save typing
+    ['teamName', 'teacher', 'members', 'lionCount'].forEach(id => {
+        const el = document.getElementById(id);
+        el.value = state[id] || '';
+        el.addEventListener('input', save);
     });
 
-    createList();
+    buildList();
 </script>
 </body>
 </html>
