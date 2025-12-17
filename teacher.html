@@ -3,60 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teacher's Master Key: Belur</title>
+    <title>Teacher's Elite Expedition</title>
     <style>
-        body { font-family: system-ui, sans-serif; background: #f4f4f9; padding: 20px; color: #333; }
-        .card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-left: 8px solid #764ba2; }
-        h1 { color: #764ba2; text-align: center; }
-        .zone-tag { background: #eee; padding: 4px 10px; border-radius: 5px; font-size: 0.8em; font-weight: bold; }
-        .answer { color: #28a745; font-weight: bold; margin-top: 10px; display: block; }
-        .pro-tip { background: #fff3cd; padding: 10px; border-radius: 8px; font-size: 0.9em; margin-top: 10px; border: 1px solid #ffeeba; }
-        .coord { color: #666; font-size: 0.85em; }
+        :root { --accent: #b8860b; --bg: #1a1a1a; --card: #2d2d2d; }
+        body { font-family: 'Times New Roman', serif; background: var(--bg); color: #f4f4f4; padding: 20px; line-height: 1.6; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .header { text-align: center; border-bottom: 2px solid var(--accent); padding-bottom: 20px; margin-bottom: 30px; }
+        .header h1 { color: var(--accent); letter-spacing: 2px; text-transform: uppercase; }
+        
+        .score-tracker { 
+            position: sticky; top: 10px; background: var(--accent); color: black; 
+            padding: 10px; border-radius: 8px; text-align: center; 
+            font-weight: bold; font-size: 1.2em; z-index: 1000; margin-bottom: 20px;
+        }
+
+        .challenge { background: var(--card); border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid #444; }
+        .challenge.complete { border-color: var(--accent); background: #242424; }
+        
+        .badge { display: inline-block; background: #444; color: var(--accent); padding: 2px 8px; border-radius: 4px; font-size: 0.7em; font-weight: bold; margin-bottom: 10px; }
+        .complete .badge { background: var(--accent); color: black; }
+        
+        h3 { margin-bottom: 8px; font-size: 1.1em; color: var(--accent); }
+        .description { font-size: 0.9em; margin-bottom: 15px; color: #ccc; }
+        
+        .btn-check { 
+            width: 100%; padding: 12px; background: none; border: 1px solid var(--accent); 
+            color: var(--accent); border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s;
+        }
+        .complete .btn-check { background: var(--accent); color: black; }
+
+        .footer { text-align: center; font-size: 0.8em; color: #666; margin-top: 40px; }
     </style>
 </head>
 <body>
 
-    <h1>🔑 Teacher's Master Key</h1>
-    <p style="text-align:center; font-style:italic;">Belur Expedition Dec 20, 2025</p>
-
-    <div class="card">
-        <span class="zone-tag">ZONE 1: EXTERIOR</span>
-        <h3>The Royal Emblem (Sala)</h3>
-        <p class="coord">Location: Both sides of the main entrance stairs.</p>
-        <span class="answer">Key: Sala is the boy, the Tiger is the Chola Empire symbol.</span>
-        <div class="pro-tip">💡 <strong>Teacher Tip:</strong> Ask students why the boy is fighting a tiger. It represents the Hoysalas (Sala) defeating the Cholas (Tiger).</div>
+<div class="container">
+    <div class="header">
+        <h1>THE ELITE CURATOR</h1>
+        <p>A Masterclass in Hoysala Art</p>
     </div>
 
-    <div class="card">
-        <span class="zone-tag">ZONE 2: BASE FRIEZES</span>
-        <h3>The Elephant Row</h3>
-        <p class="coord">Location: Lowest horizontal band around the whole temple.</p>
-        <span class="answer">Verification: Every elephant has a different pose, trunk position, or jewelry.</span>
-        <div class="pro-tip">💡 <strong>Teacher Tip:</strong> If a team says they are all the same, challenge them to find the one elephant holding a flower!</div>
-    </div>
+    <div id="scoreDisplay" class="score-tracker">Curator Status: Novice (0 pts)</div>
 
-    <div class="card">
-        <span class="zone-tag">ZONE 3: MADANIKAS</span>
-        <h3>The Mirror Lady & Monkey</h3>
-        <p class="coord">Location: High bracket figures (angled statues).</p>
-        <span class="answer">Key: The monkey is pulling the "Saree" or "Dress".</span>
-        <div class="pro-tip">💡 <strong>Teacher Tip:</strong> This carving shows humor in ancient art. Ask students if they think the artist was being funny.</div>
-    </div>
+    <div id="challengeList"></div>
 
-    <div class="card">
-        <span class="zone-tag">ZONE 4: INTERIOR</span>
-        <h3>Narasimha Pillar (The Spinner)</h3>
-        <p class="coord">Location: Inside the hall, slightly to the left of center.</p>
-        <span class="answer">Key: Covered in tiny deities. Was built to rotate on ball bearings.</span>
-        <div class="pro-tip">💡 <strong>Teacher Tip:</strong> Use a phone flashlight here. The carvings are so tiny (less than 1 inch) that they are hard to see in the dark hall.</div>
+    <div class="footer">
+        <p onclick="resetProgress()" style="cursor:pointer">Clear My Portfolio Data</p>
     </div>
+</div>
 
-    <div class="card">
-        <span class="zone-tag">MASTER VERIFICATION</span>
-        <h3>The Secret Message</h3>
-        <p>If students use the Decoder App, the final answer is:</p>
-        <h2 style="color: #d4af37; text-align:center; letter-spacing: 5px;">THE KINGS CROWN</h2>
-    </div>
+<script>
+    const eliteChallenges = [
+        { id: 1, pts: 100, title: "The Mirror Finish", task: "Locate the Mohini Pillar inside. Find the angle where the stone reflects the interior lanterns like a black mirror.", badge: "OPTICS MASTER" },
+        { id: 2, pts: 150, title: "Anatomical Precision", task: "Look at the 'Madanika' bracket figures. Find one showing clear muscular detail or veins on the hands/feet.", badge: "ANATOMY EXPERT" },
+        { id: 3, pts: 200, title: "The Impossible Void", task: "Locate a carving (likely a lace window or a piece of jewelry) where the stone is hollowed out completely behind the design.", badge: "ENGINEERING SCOUT" },
+        { id: 4, pts: 125, title: "The Signature of Genius", task: "Find an inscription by the master sculptor 'Dasoja'. Hint: Look at the pedestals of the most detailed statues.", badge: "HISTORIAN" },
+        { id: 5, pts: 250, title: "The Micro-Detail", task: "Find the 'Fly on the Corn'. It requires exceptional patience. The fly is carved on a single kernel of a stone maize cob.", badge: "EAGLE EYE" },
+        { id: 6, pts: 100, title: "Astronomical Alignment", task: "Locate the Bhuvaneshwari (Lotus) ceiling. Capture a photo looking directly up that shows its perfect symmetry.", badge: "SYMMETRY KING" }
+    ];
+
+    let teacherState = JSON.parse(localStorage.getItem('belurTeacherElite') || '{}');
+
+    function renderGame() {
+        const list = document.getElementById('challengeList');
+        list.innerHTML = '';
+        let totalPts = 0;
+
+        eliteChallenges.forEach(c => {
+            const isDone = teacherState[c.id];
+            if(isDone) totalPts += c.pts;
+
+            const div = document.createElement('div');
+            div.className = `challenge ${isDone ? 'complete' : ''}`;
+            div.innerHTML = `
+                <span class="badge">${c.badge}</span>
+                <h3>${c.title} (${c.pts} pts)</h3>
+                <p class="description">${c.task}</p>
+                <button class="btn-check" onclick="toggleTask(${c.id})">${isDone ? 'COLLECTED IN PORTFOLIO' : 'MARK AS DOCUMENTED'}</button>
+            `;
+            list.appendChild(div);
+        });
+
+        updateStatus(totalPts);
+    }
+
+    function toggleTask(id) {
+        teacherState[id] = !teacherState[id];
+        localStorage.setItem('belurTeacherElite', JSON.stringify(teacherState));
+        renderGame();
+    }
+
+    function updateStatus(score) {
+        const display = document.getElementById('scoreDisplay');
+        let status = "Novice Curator";
+        if(score >= 800) status = "🏆 Legend of the Academy";
+        else if(score >= 500) status = "Senior Historian";
+        else if(score >= 200) status = "Expert Researcher";
+        
+        display.innerText = `${status} (${score} pts)`;
+    }
+
+    function resetProgress() {
+        if(confirm("Wipe your portfolio data?")) {
+            localStorage.removeItem('belurTeacherElite');
+            teacherState = {};
+            renderGame();
+        }
+    }
+
+    renderGame();
+</script>
 
 </body>
 </html>
