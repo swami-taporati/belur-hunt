@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Belur Mystery: The Lost Script</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Courier New', Courier, monospace; background: #2c1e14; color: #d4af37; padding: 15px; }
+        
+        .container { max-width: 600px; margin: 0 auto; background: #3d2b1f; border: 4px solid #d4af37; border-radius: 10px; padding: 20px; }
+        
+        .header { text-align: center; border-bottom: 2px solid #d4af37; margin-bottom: 20px; padding-bottom: 10px; }
+        
+        .cipher-box { background: #1a0f08; padding: 15px; border-radius: 5px; text-align: center; margin-bottom: 20px; border: 1px dashed #d4af37; }
+        .fragment-cell { display: inline-block; width: 30px; height: 35px; border: 1px solid #d4af37; margin: 2px; line-height: 35px; font-size: 1.2em; font-weight: bold; background: #2c1e14; }
+
+        .mission-item { background: #4e3629; margin-bottom: 15px; padding: 15px; border-radius: 8px; transition: 0.3s; }
+        .mission-item.unlocked { border: 2px solid #00ff00; background: #2e4d2e; }
+        
+        .quest-title { font-weight: bold; font-size: 1.1em; color: #fff; margin-bottom: 5px; display: block; }
+        .hint { font-size: 0.85em; color: #aaa; font-style: italic; display: block; margin-bottom: 10px; }
+        
+        input[type="text"] { background: #1a0f08; border: 1px solid #d4af37; color: #00ff00; padding: 8px; width: 100%; text-transform: uppercase; font-family: monospace; }
+        
+        .status { font-size: 0.8em; margin-top: 5px; font-weight: bold; }
+        .correct { color: #00ff00; }
+        .wrong { color: #ff4444; }
+
+        .hidden-fragment { visibility: hidden; }
+        .revealed { visibility: visible; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>📜 THE LOST SCRIPT</h1>
+        <p>Decode the 12th-Century Secret</p>
+    </div>
+
+    <div class="cipher-box">
+        <p style="font-size: 0.7em; margin-bottom: 10px;">DECODED FRAGMENTS:</p>
+        <div id="cipherDisplay"></div>
+    </div>
+
+    <div id="missionList"></div>
+</div>
+
+<script>
+    // THE SECRET MESSAGE: THE KINGS CROWN
+    // Total 13 characters (excluding spaces)
+    const secret = "THEKINGSCROWN"; 
+    
+    const quests = [
+        { id: 0, title: "The Royal Emblem", hint: "Find Sala fighting the tiger. What animal is Sala fighting?", answer: "TIGER" },
+        { id: 1, title: "Gravity Pillar", hint: "Find the lamp pillar. How many corners touch the ground?", answer: "3" },
+        { id: 2, title: "Elephant Frieze", hint: "Count the elephants in a small 1-meter section. Are they identical?", answer: "NO" },
+        { id: 3, title: "The Mirror Lady", hint: "Look at Darpana Sundari. What is she holding?", answer: "MIRROR" },
+        { id: 4, title: "The Huntress", hint: "What weapon is the Huntress holding?", answer: "BOW" },
+        { id: 5, title: "The Monkey", hint: "The lady is shooing a monkey. What is the monkey pulling?", answer: "SAREE" },
+        { id: 6, title: "The Parrot", hint: "The bird is sitting on her... (Arm, Shoulder, or Head?)", answer: "ARM" },
+        { id: 7, title: "The Smooth Pillar", hint: "The Mohini pillar is black. Can you see your reflection?", answer: "YES" },
+        { id: 8, title: "The Spinner", hint: "The Narasimha pillar is covered in tiny... (Flowers, People, or Animals?)", answer: "PEOPLE" },
+        { id: 9, title: "The Ceiling", hint: "Look up in the center. What flower is carved there?", answer: "LOTUS" },
+        { id: 10, title: "The Angry God", hint: "Narasimha is part man and part...?", answer: "LION" },
+        { id: 11, title: "The Artist", hint: "Look at the feet. In what language are the signatures?", answer: "KANNADA" },
+        { id: 12, title: "The Frog Temple", hint: "What is the name of the smaller temple? Kappe...?", answer: "CHENNIGARAYA" }
+    ];
+
+    let gameState = JSON.parse(localStorage.getItem('belurDecoder') || '{}');
+
+    function render() {
+        // Render Cipher Box
+        const cipherDisplay = document.getElementById('cipherDisplay');
+        cipherDisplay.innerHTML = '';
+        
+        secret.split('').forEach((char, index) => {
+            const span = document.createElement('span');
+            span.className = 'fragment-cell';
+            span.innerText = gameState[index] ? char : '?';
+            if (gameState[index]) span.style.color = '#00ff00';
+            cipherDisplay.appendChild(span);
+        });
+
+        // Render Quests
+        const list = document.getElementById('missionList');
+        list.innerHTML = '';
+        
+        quests.forEach((q, i) => {
+            const isDone = gameState[i];
+            const div = document.createElement('div');
+            div.className = `mission-item ${isDone ? 'unlocked' : ''}`;
+            div.innerHTML = `
+                <span class="quest-title">QUEST #${i+1}: ${q.title}</span>
+                <span class="hint">📍 ${q.hint}</span>
+                ${isDone ? 
+                    `<p class="correct">✓ FRAGMENT DECODED</p>` : 
+                    `<input type="text" placeholder="TYPE ANSWER..." onchange="checkAnswer(${i}, this.value)">
+                     <div id="feedback-${i}" class="status"></div>`
+                }
+            `;
+            list.appendChild(div);
+        });
+
+        if (Object.keys(gameState).length === quests.length) {
+            alert("MESSAGED DECODED! REPORT TO THE TEACHER: " + secret);
+        }
+    }
+
+    function checkAnswer(id, val) {
+        const feedback = document.getElementById(`feedback-${id}`);
+        if (val.trim().toUpperCase() === quests[id].answer) {
+            gameState[id] = true;
+            localStorage.setItem('belurDecoder', JSON.stringify(gameState));
+            render();
+        } else {
+            feedback.innerText = "❌ SCRIPT REJECTED. TRY AGAIN.";
+            feedback.className = "status wrong";
+        }
+    }
+
+    render();
+</script>
+
+</body>
+</html>
