@@ -622,19 +622,23 @@
     </div>
 
     <script>
+        <script>
         const items = document.querySelectorAll('.item');
         const progressBar = document.getElementById('progressBar');
         const completionMessage = document.getElementById('completionMessage');
         const totalItems = 20;
         let completedCount = 0;
 
+        // Load saved state
         const savedState = JSON.parse(localStorage.getItem('belurHunt') || '{}');
         
+        // Load team info
         document.getElementById('teamName').value = savedState.teamName || '';
         document.getElementById('teacher').value = savedState.teacher || '';
         document.getElementById('members').value = savedState.members || '';
         document.getElementById('lionCount').value = savedState.lionCount || '';
 
+        // Initialize items
         items.forEach(item => {
             const id = item.dataset.id;
             if (savedState[`item${id}`]) {
@@ -644,6 +648,7 @@
 
             item.querySelector('.item-header').addEventListener('click', function() {
                 item.classList.toggle('completed');
+                
                 if (item.classList.contains('completed')) {
                     completedCount++;
                     savedState[`item${id}`] = true;
@@ -651,12 +656,13 @@
                     completedCount--;
                     delete savedState[`item${id}`];
                 }
+                
                 updateProgress();
                 saveState();
             });
         });
 
-        // Event listeners for inputs
+        // Save inputs automatically
         ['teamName', 'teacher', 'members', 'lionCount'].forEach(id => {
             document.getElementById(id).addEventListener('input', function() {
                 savedState[id] = this.value;
@@ -668,40 +674,69 @@
             const percentage = (completedCount / totalItems) * 100;
             progressBar.style.width = percentage + '%';
             progressBar.textContent = `${completedCount} / ${totalItems}`;
-            if (completedCount === totalItems) completionMessage.classList.add('show');
+            
+            if (completedCount === totalItems) {
+                completionMessage.classList.add('show');
+            } else {
+                completionMessage.classList.remove('show');
+            }
         }
 
         function saveState() {
             localStorage.setItem('belurHunt', JSON.stringify(savedState));
         }
 
-        // --- NEW SUBMIT FUNCTION ---
+        // NEW: Submission function including Teacher Name
         function submitResults() {
-            const team = document.getElementById('teamName').value || "Unknown Team";
+            const team = document.getElementById('teamName').value || "Unnamed Team";
+            const teacher = document.getElementById('teacher').value || "No Teacher Assigned";
             const count = document.getElementById('lionCount').value || "Not counted";
+            const members = document.getElementById('members').value || "Not listed";
             
             const summary = `🏆 BELUR MISSION REPORT 🏆\n` +
+                          `--------------------------\n` +
                           `Team: ${team}\n` +
+                          `Teacher In-Charge: ${teacher}\n` +
                           `Score: ${completedCount}/${totalItems}\n` +
                           `Lion Statues Counted: ${count}\n` +
-                          `Members: ${document.getElementById('members').value}`;
+                          `Members: ${members}`;
             
             if (navigator.share) {
-                navigator.share({ title: 'Belur Hunt Results', text: summary });
+                navigator.share({
+                    title: 'Belur Hunt Results',
+                    text: summary
+                }).catch(err => {
+                    console.log("Error sharing:", err);
+                });
             } else {
-                alert("Results copied to clipboard! Paste it to your teacher.\n\n" + summary);
+                // Fallback for browsers that don't support native sharing
                 navigator.clipboard.writeText(summary);
+                alert("Results copied to clipboard! Paste them into WhatsApp or Email to your teacher.\n\n" + summary);
             }
         }
 
-        // Add Button to UI
-        const btn = document.createElement('button');
-        btn.innerHTML = "📤 Submit Mission Results";
-        btn.style = "width: 100%; padding: 20px; background: #764ba2; color: white; border: none; border-radius: 10px; font-size: 1.2em; cursor: pointer; margin-top: 20px;";
-        btn.onclick = submitResults;
-        document.querySelector('.content').appendChild(btn);
+        // Add the styled Submit Button to the UI
+        const submitBtn = document.createElement('button');
+        submitBtn.innerHTML = "📤 Submit Mission Results";
+        submitBtn.style = `
+            width: 100%; 
+            padding: 20px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            border: none; 
+            border-radius: 12px; 
+            font-size: 1.2em; 
+            font-weight: bold;
+            cursor: pointer; 
+            margin-top: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        `;
+        submitBtn.onclick = submitResults;
+        document.querySelector('.content').appendChild(submitBtn);
 
+        // Initial progress update
         updateProgress();
+    </script>
     </script>
 </body>
 </html>
