@@ -628,16 +628,13 @@
         const totalItems = 20;
         let completedCount = 0;
 
-        // Load saved state
         const savedState = JSON.parse(localStorage.getItem('belurHunt') || '{}');
         
-        // Load team info
         document.getElementById('teamName').value = savedState.teamName || '';
         document.getElementById('teacher').value = savedState.teacher || '';
         document.getElementById('members').value = savedState.members || '';
         document.getElementById('lionCount').value = savedState.lionCount || '';
 
-        // Initialize items
         items.forEach(item => {
             const id = item.dataset.id;
             if (savedState[`item${id}`]) {
@@ -647,7 +644,6 @@
 
             item.querySelector('.item-header').addEventListener('click', function() {
                 item.classList.toggle('completed');
-                
                 if (item.classList.contains('completed')) {
                     completedCount++;
                     savedState[`item${id}`] = true;
@@ -655,50 +651,56 @@
                     completedCount--;
                     delete savedState[`item${id}`];
                 }
-                
                 updateProgress();
                 saveState();
             });
         });
 
-        // Save team info
-        document.getElementById('teamName').addEventListener('input', function() {
-            savedState.teamName = this.value;
-            saveState();
-        });
-
-        document.getElementById('teacher').addEventListener('input', function() {
-            savedState.teacher = this.value;
-            saveState();
-        });
-
-        document.getElementById('members').addEventListener('input', function() {
-            savedState.members = this.value;
-            saveState();
-        });
-
-        document.getElementById('lionCount').addEventListener('input', function() {
-            savedState.lionCount = this.value;
-            saveState();
+        // Event listeners for inputs
+        ['teamName', 'teacher', 'members', 'lionCount'].forEach(id => {
+            document.getElementById(id).addEventListener('input', function() {
+                savedState[id] = this.value;
+                saveState();
+            });
         });
 
         function updateProgress() {
             const percentage = (completedCount / totalItems) * 100;
             progressBar.style.width = percentage + '%';
             progressBar.textContent = `${completedCount} / ${totalItems}`;
-            
-            if (completedCount === totalItems) {
-                completionMessage.classList.add('show');
-            } else {
-                completionMessage.classList.remove('show');
-            }
+            if (completedCount === totalItems) completionMessage.classList.add('show');
         }
 
         function saveState() {
             localStorage.setItem('belurHunt', JSON.stringify(savedState));
         }
 
-        // Initial progress update
+        // --- NEW SUBMIT FUNCTION ---
+        function submitResults() {
+            const team = document.getElementById('teamName').value || "Unknown Team";
+            const count = document.getElementById('lionCount').value || "Not counted";
+            
+            const summary = `🏆 BELUR MISSION REPORT 🏆\n` +
+                          `Team: ${team}\n` +
+                          `Score: ${completedCount}/${totalItems}\n` +
+                          `Lion Statues Counted: ${count}\n` +
+                          `Members: ${document.getElementById('members').value}`;
+            
+            if (navigator.share) {
+                navigator.share({ title: 'Belur Hunt Results', text: summary });
+            } else {
+                alert("Results copied to clipboard! Paste it to your teacher.\n\n" + summary);
+                navigator.clipboard.writeText(summary);
+            }
+        }
+
+        // Add Button to UI
+        const btn = document.createElement('button');
+        btn.innerHTML = "📤 Submit Mission Results";
+        btn.style = "width: 100%; padding: 20px; background: #764ba2; color: white; border: none; border-radius: 10px; font-size: 1.2em; cursor: pointer; margin-top: 20px;";
+        btn.onclick = submitResults;
+        document.querySelector('.content').appendChild(btn);
+
         updateProgress();
     </script>
 </body>
