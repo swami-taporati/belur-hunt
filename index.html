@@ -621,7 +621,7 @@
         </div>
     </div>
 
-   <script>
+  <script>
         const items = document.querySelectorAll('.item');
         const progressBar = document.getElementById('progressBar');
         const completionMessage = document.getElementById('completionMessage');
@@ -691,51 +691,58 @@
             localStorage.setItem('belurHunt', JSON.stringify(savedState));
         }
 
-        // Submission function
+        // Submission function (Corrected to include Member Names)
         function submitResults() {
             const team = document.getElementById('teamName').value || "Unnamed Team";
             const teacher = document.getElementById('teacher').value || "No Teacher Assigned";
+            const memberList = document.getElementById('members').value || "Not specified";
+            const lionVal = document.getElementById('lionCount').value || "0";
+            
             const summary = `🏆 BELUR MISSION REPORT 🏆\n` +
+                          `--------------------------\n` +
                           `Team: ${team}\n` +
                           `Teacher: ${teacher}\n` +
+                          `Members: ${memberList}\n` +
+                          `--------------------------\n` +
                           `Score: ${completedCount}/${totalItems}\n` +
-                          `Lions: ${document.getElementById('lionCount').value}`;
+                          `Lions Counted: ${lionVal}`;
             
             if (navigator.share) {
-                navigator.share({ title: 'Belur Hunt Results', text: summary });
+                navigator.share({ title: 'Belur Hunt Results', text: summary })
+                .catch(err => console.log("Share failed:", err));
             } else {
                 navigator.clipboard.writeText(summary);
-                alert("Results copied! Paste them to your teacher.");
+                alert("Results copied to clipboard! Paste them to your teacher.\n\n" + summary);
             }
         }
 
-        // NEW: Clear data function
+        // Clear data function
         function resetMission() {
-            if (confirm("Are you sure? This will delete all progress for the current team!")) {
+            if (confirm("WARNING: This will delete ALL progress for the current team. Start fresh?")) {
                 localStorage.removeItem('belurHunt');
                 savedState = {};
                 loadUI();
-                window.scrollTo(0, 0); // Scroll to top
-                alert("Mission cleared. Ready for a new team!");
+                window.scrollTo(0, 0);
+                alert("All data cleared. Ready for a new team!");
             }
         }
 
         // UI Buttons Container
         const buttonContainer = document.createElement('div');
-        buttonContainer.style = "margin-top: 30px; display: flex; flex-direction: column; gap: 15px;";
+        buttonContainer.style = "margin-top: 40px; display: flex; flex-direction: column; gap: 15px; padding-bottom: 40px;";
         document.querySelector('.content').appendChild(buttonContainer);
 
-        // Add Submit Button
+        // Add Submit Button (Main Action)
         const submitBtn = document.createElement('button');
         submitBtn.innerHTML = "📤 Submit Mission Results";
-        submitBtn.style = "padding: 20px; background: #764ba2; color: white; border: none; border-radius: 12px; font-size: 1.2em; font-weight: bold; cursor: pointer;";
+        submitBtn.style = "padding: 22px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 12px; font-size: 1.3em; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2);";
         submitBtn.onclick = submitResults;
         buttonContainer.appendChild(submitBtn);
 
-        // Add Reset Button
+        // Add Reset Button (Secondary Action)
         const resetBtn = document.createElement('button');
-        resetBtn.innerHTML = "🔄 Reset & Start New Mission";
-        resetBtn.style = "padding: 12px; background: #f8f9fa; color: #dc3545; border: 2px solid #dc3545; border-radius: 12px; font-size: 0.9em; font-weight: bold; cursor: pointer;";
+        resetBtn.innerHTML = "Reset Everything";
+        resetBtn.style = "padding: 10px; background: transparent; color: #999; border: 1px solid #ccc; border-radius: 8px; font-size: 0.8em; cursor: pointer; align-self: center; margin-top: 10px;";
         resetBtn.onclick = resetMission;
         buttonContainer.appendChild(resetBtn);
 
