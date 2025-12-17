@@ -3,120 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Belur Temple Scavenger Hunt</title>
+    <title>Belur Mission: The Hoysala Quest</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
+            padding: 15px;
         }
         .container {
-            max-width: 700px;
+            max-width: 650px;
             margin: 0 auto;
             background: white;
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
             overflow: hidden;
         }
         .header {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;
-            padding: 30px;
+            padding: 25px;
             text-align: center;
         }
-        .progress-sticky {
+        .status-bar {
             position: sticky;
             top: 0;
             z-index: 1000;
-            background: #eee;
-            border-bottom: 2px solid #ddd;
-        }
-        .progress-bar {
-            height: 35px;
-            background: #4CAF50;
-            width: 0%;
-            transition: 0.5s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-        }
-        .rank-bar {
             background: #fff3cd;
-            color: #856404;
+            border-bottom: 2px solid #ffeeba;
+            padding: 10px;
             text-align: center;
-            padding: 5px;
-            font-size: 0.9em;
-            font-weight: bold;
         }
-        .content { padding: 25px; }
-        .setup-box { background: #f8f9fa; padding: 20px; border-radius: 15px; margin-bottom: 25px; border: 1px solid #e9ecef; }
-        input[type="text"], textarea {
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
+        #rankText { font-weight: bold; color: #856404; font-size: 1.1em; }
+        .progress-bg { background: #e9ecef; height: 12px; border-radius: 6px; margin-top: 8px; overflow: hidden; }
+        #progressFill { background: #28a745; height: 100%; width: 0%; transition: 0.5s; }
+        
+        .content { padding: 20px; }
+        .zone-header { 
+            background: #343a40; color: white; padding: 8px 15px; 
+            border-radius: 5px; margin: 20px 0 10px 0; font-size: 0.9em; text-transform: uppercase;
         }
         .item {
-            background: #f9f9f9;
-            border: 2px solid #eee;
-            border-radius: 12px;
-            padding: 18px;
-            margin-bottom: 15px;
-            cursor: pointer;
-            transition: 0.2s;
+            background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 12px;
+            padding: 15px; margin-bottom: 12px; cursor: pointer; transition: 0.2s;
         }
-        .item.completed {
-            background: #e8f5e9;
-            border-color: #4CAF50;
+        .item.completed { background: #e8f5e9; border-color: #28a745; }
+        .item-main { display: flex; align-items: center; gap: 12px; font-weight: 600; }
+        .checkbox { width: 24px; height: 24px; border: 2px solid #ccc; border-radius: 6px; background: white; flex-shrink: 0; }
+        .completed .checkbox { background: #28a745; border-color: #28a745; position: relative; }
+        .completed .checkbox::after { content: '✓'; color: white; position: absolute; left: 5px; top: -1px; }
+        
+        .loc-hint { font-size: 0.8em; color: #6c757d; margin-top: 5px; font-style: italic; }
+        
+        .input-group { margin-bottom: 15px; }
+        input[type="text"], textarea {
+            width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; margin-top: 5px;
         }
-        .item-header { display: flex; align-items: center; gap: 12px; font-weight: 600; color: #333; }
-        .checkbox {
-            width: 26px;
-            height: 26px;
-            border: 2px solid #ccc;
-            border-radius: 8px;
-            background: white;
-            flex-shrink: 0;
-        }
-        .completed .checkbox {
-            background: #4CAF50;
-            border-color: #4CAF50;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .completed .checkbox::after { content: '✓'; color: white; font-weight: bold; }
-        .hint-btn { font-size: 0.75em; color: #764ba2; text-decoration: underline; margin-top: 8px; cursor: pointer; }
-        .hint-text { font-size: 0.85em; color: #666; font-style: italic; margin-top: 5px; display: none; }
-        .show-hint .hint-text { display: block; }
-        .btn-submit {
-            width: 100%;
-            padding: 20px;
-            background: #764ba2;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 1.3em;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            margin-top: 20px;
-        }
-        .btn-reset {
-            width: 100%;
-            padding: 10px;
-            background: transparent;
-            color: #999;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            margin-top: 15px;
-            cursor: pointer;
+        .submit-btn {
+            width: 100%; padding: 20px; background: #764ba2; color: white;
+            border: none; border-radius: 12px; font-size: 1.2em; font-weight: bold;
+            margin-top: 20px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
     </style>
 </head>
@@ -124,149 +71,124 @@
 
 <div class="container">
     <div class="header">
-        <h1>Belur Mission</h1>
-        <p>Master the Temple Secrets</p>
+        <h1>Belur Quest</h1>
+        <p>Archaeological Expedition</p>
     </div>
 
-    <div class="progress-sticky">
-        <div id="rankBar" class="rank-bar">Current Status: Novice Scout</div>
-        <div id="progressBar" class="progress-bar">0 / 20</div>
+    <div class="status-bar">
+        <div id="rankText">Rank: Junior Scout</div>
+        <div class="progress-bg"><div id="progressFill"></div></div>
     </div>
 
     <div class="content">
-        <div class="setup-box">
+        <div class="input-group">
             <input type="text" id="teamName" placeholder="Team Name">
-            <input type="text" id="teacher" placeholder="Teacher Name">
-            <textarea id="members" placeholder="Team Member Names..." rows="2"></textarea>
-            <input type="text" id="lionCount" placeholder="Count the Lions at the base...">
+            <input type="text" id="teacher" placeholder="Teacher In-Charge">
+            <textarea id="members" placeholder="Team Members..." rows="2"></textarea>
         </div>
 
         <div id="missionList"></div>
 
-        <button class="btn-submit" onclick="submitResults()">📤 Submit Report</button>
-        <button class="btn-reset" onclick="resetApp()">Reset All Data</button>
+        <button class="submit-btn" onclick="submitResults()">📤 Dispatch Report</button>
+        <button onclick="resetApp()" style="width:100%; background:none; border:none; color:#999; margin-top:15px; cursor:pointer; font-size:0.8em;">Reset Mission</button>
     </div>
 </div>
 
 <script>
-    const missionItems = [
-        { name: "Royal Emblem", clue: "Search for a warrior (Sala) slaying a tiger near the entrances." },
-        { name: "Gravity Pillar", clue: "The tall stone pillar. Can you slide a piece of paper under it?" },
-        { name: "Charging Lions", clue: "The bottom-most row of animals on the temple walls." },
-        { name: "Elephant Frieze", clue: "Look just above the lions. No two elephants are exactly alike!" },
-        { name: "Darpanasundari", clue: "The 'Lady with a Mirror' bracket figure high up on the wall." },
-        { name: "The Drummer", clue: "A stone lady playing a traditional drum." },
-        { name: "Monkey & Scorpion", clue: "Look for a lady troubled by a monkey; a scorpion is near her feet." },
-        { name: "Rotating Pillar", clue: "The Narasimha Pillar inside. It's so smooth it once rotated!" },
-        { name: "Ceiling Lotus", clue: "Look directly up at the ceiling in the main hall." },
-        { name: "Stone Lattice", clue: "The stone windows carved to look like lace." },
-        { name: "Step Well", clue: "Find the geometric 'Pushkarni' water tank." },
-        { name: "Horse Frieze", clue: "The row of horses above the elephants." },
-        { name: "Mythical Makara", clue: "A creature with 7 animals combined! (Trunk, Paws, Tail, etc.)" },
-        { name: "Smallest Ganesha", clue: "A tiny carving near the base of the southern steps." },
-        { name: "The Huntress", clue: "A lady figure aiming a bow high up on the brackets." },
-        { name: "Shuko-Bhashini", clue: "Look for the stone lady talking to a parrot." },
-        { name: "Dancing Floor", clue: "The circular, polished stone in the center where the Queen danced." },
-        { name: "Vishnu Avatar", clue: "Look for Narasimha (Lion-man) on the wall panels." },
-        { name: "Mohini Figure", clue: "The beautiful female avatar of Lord Vishnu." },
-        { name: "Deepa Stambha", clue: "The tall lamp pillar standing in the courtyard." }
+    const missionData = [
+        { zone: "Zone 1: Entrance & Courtyard", items: [
+            { id: 0, name: "The Royal Emblem", hint: "Look for Sala slaying the tiger near the main steps." },
+            { id: 1, name: "Gravity Pillar", hint: "The tall lamp pillar that stands by its own weight." },
+            { id: 2, name: "Step Well (Pushkarni)", hint: "The geometric water tank in the corner of the compound." }
+        ]},
+        { zone: "Zone 2: Temple Base (Lower Friezes)", items: [
+            { id: 3, name: "Elephant Frieze", hint: "The very bottom row. How many look exactly the same?" },
+            { id: 4, name: "Charging Lions", hint: "The second row of animals above the elephants." },
+            { id: 5, name: "Horse Frieze", hint: "The third row, representing speed and power." },
+            { id: 6, name: "Mythical Makara", hint: "A creature with an elephant trunk and peacock tail." },
+            { id: 7, name: "Smallest Ganesha", hint: "Hidden tiny carving near the southern entrance base." }
+        ]},
+        { zone: "Zone 3: Outer Walls (The Masterpieces)", items: [
+            { id: 8, name: "Darpanasundari", hint: "The lady with the mirror. High up as a bracket figure." },
+            { id: 9, name: "The Drummer", hint: "A stone lady playing a traditional percussion instrument." },
+            { id: 10, name: "Monkey & Scorpion", hint: "A lady troubled by a monkey; a scorpion is near her feet." },
+            { id: 11, name: "The Huntress", hint: "A figure aiming a bow and arrow high on the wall." },
+            { id: 12, name: "Shuko-Bhashini", hint: "Look for a lady talking to a parrot on her hand." },
+            { id: 13, name: "Vishnu's Avatars", hint: "Look for Narasimha (Lion-man) on the wall panels." },
+            { id: 14, name: "Mohini Figure", hint: "The beautiful female avatar of Vishnu." }
+        ]},
+        { zone: "Zone 4: Inside the Hall (Dark Secrets)", items: [
+            { id: 15, name: "Narasimha Pillar", hint: "Intricate pillar inside. It was said to rotate!" },
+            { id: 16, name: "Ceiling Lotus", hint: "Look straight up at the center of the interior hall." },
+            { id: 17, name: "Dancing Floor", hint: "The polished circular stone where the Queen danced." },
+            { id: 18, name: "Stone Lattice", hint: "The carved windows that let light into the hall." },
+            { id: 19, name: "Artist Signature", hint: "Old Kannada writing at the base of a statue." }
+        ]}
     ];
 
-    let state = JSON.parse(localStorage.getItem('belurFinalV6') || '{}');
+    let state = JSON.parse(localStorage.getItem('belurExpedition') || '{}');
 
-    function buildList() {
+    function renderList() {
         const list = document.getElementById('missionList');
         list.innerHTML = '';
-        let completed = 0;
+        let count = 0;
 
-        missionItems.forEach((item, i) => {
-            const isDone = state[`item${i}`];
-            if(isDone) completed++;
+        missionData.forEach(zone => {
+            const zHeader = document.createElement('div');
+            zHeader.className = 'zone-header';
+            zHeader.innerText = zone.zone;
+            list.appendChild(zHeader);
 
-            const div = document.createElement('div');
-            div.className = `item ${isDone ? 'completed' : ''}`;
-            div.id = `item-${i}`;
-            div.innerHTML = `
-                <div class="item-header" onclick="toggle(${i})">
-                    <div class="checkbox"></div>
-                    <span>${i+1}. ${item.name}</span>
-                </div>
-                <div class="hint-btn" onclick="showHint(${i}, event)">💡 Need a clue?</div>
-                <div class="hint-text">${item.clue}</div>
-            `;
-            list.appendChild(div);
+            zone.items.forEach(item => {
+                const isDone = state[item.id];
+                if(isDone) count++;
+                const div = document.createElement('div');
+                div.className = `item ${isDone ? 'completed' : ''}`;
+                div.onclick = () => toggle(item.id);
+                div.innerHTML = `
+                    <div class="item-main"><div class="checkbox"></div><span>${item.name}</span></div>
+                    <div class="loc-hint">📍 ${item.hint}</div>
+                `;
+                list.appendChild(div);
+            });
         });
-        updateProgress(completed);
+        updateRank(count);
     }
 
-    function toggle(i) {
-        state[`item${i}`] = !state[`item${i}`];
-        if(!state[`item${i}`]) delete state[`item${i}`];
-        save();
-        buildList();
+    function toggle(id) {
+        state[id] = !state[id];
+        localStorage.setItem('belurExpedition', JSON.stringify(state));
+        renderList();
     }
 
-    function showHint(i, e) {
-        e.stopPropagation();
-        document.getElementById(`item-${i}`).classList.toggle('show-hint');
-    }
-
-    function save() {
-        state.teamName = document.getElementById('teamName').value;
-        state.teacher = document.getElementById('teacher').value;
-        state.members = document.getElementById('members').value;
-        state.lionCount = document.getElementById('lionCount').value;
-        localStorage.setItem('belurFinalV6', JSON.stringify(state));
-    }
-
-    function updateProgress(count) {
-        const bar = document.getElementById('progressBar');
-        const rank = document.getElementById('rankBar');
-        bar.style.width = (count / 20 * 100) + '%';
-        bar.textContent = `${count} / 20 Items Found`;
-
-        if (count < 5) rank.innerText = "Status: Novice Scout";
-        else if (count < 10) rank.innerText = "Status: Temple Explorer";
-        else if (count < 15) rank.innerText = "Status: Master Archaeologist";
-        else if (count < 20) rank.innerText = "Status: Royal Guardian";
-        else rank.innerText = "🏆 Status: Legend of Belur";
+    function updateRank(count) {
+        const fill = document.getElementById('progressFill');
+        const rText = document.getElementById('rankText');
+        fill.style.width = (count / 20 * 100) + '%';
+        
+        let rank = "Junior Scout";
+        if(count >= 20) rank = "🏆 Legend of the Hoysala";
+        else if(count >= 15) rank = "Royal Historian";
+        else if(count >= 10) rank = "Expert Archaeologist";
+        else if(count >= 5) rank = "Senior Scout";
+        
+        rText.innerText = `Rank: ${rank} (${count}/20)`;
     }
 
     function submitResults() {
-        const score = Object.keys(state).filter(k => k.startsWith('item')).length;
-        const summary = `🏆 BELUR MISSION REPORT 🏆\n` +
-            `Team: ${document.getElementById('teamName').value || '---'}\n` +
-            `Teacher: ${document.getElementById('teacher').value || '---'}\n` +
-            `Members: ${document.getElementById('members').value || '---'}\n` +
-            `Lions Counted: ${document.getElementById('lionCount').value || '---'}\n` +
-            `--------------------------\n` +
-            `Score: ${score}/20\n` +
-            `Rank: ${document.getElementById('rankBar').innerText}`;
-        
-        if (navigator.share) {
-            navigator.share({ title: 'Belur Report', text: summary });
-        } else {
-            navigator.clipboard.writeText(summary);
-            alert("Results copied! Paste them to your teacher.");
-        }
+        const count = Object.keys(state).filter(k => state[k] === true).length;
+        const text = `🏆 MISSION COMPLETE 🏆\nTeam: ${document.getElementById('teamName').value}\nTeacher: ${document.getElementById('teacher').value}\nRank: ${document.getElementById('rankText').innerText}\nItems Found: ${count}/20`;
+        navigator.share ? navigator.share({text: text}) : alert("Copied to clipboard!\n\n" + text);
     }
 
-    function resetApp() {
-        if(confirm("Wipe all data and start a new team mission?")) {
-            localStorage.removeItem('belurFinalV6');
-            state = {};
-            location.reload();
-        }
-    }
+    function resetApp() { if(confirm("Start new mission?")) { localStorage.clear(); location.reload(); } }
 
-    // Auto-save typing
-    ['teamName', 'teacher', 'members', 'lionCount'].forEach(id => {
-        const el = document.getElementById(id);
-        el.value = state[id] || '';
-        el.addEventListener('input', save);
+    ['teamName', 'teacher', 'members'].forEach(id => {
+        document.getElementById(id).value = state[id] || '';
+        document.getElementById(id).oninput = (e) => { state[id] = e.target.value; localStorage.setItem('belurExpedition', JSON.stringify(state)); };
     });
 
-    buildList();
+    renderList();
 </script>
 </body>
 </html>
