@@ -5,99 +5,118 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teacher Briefing: Belur Adventure</title>
     <style>
+        /* Isha-Inspired Palette */
+        :root {
+            --isha-orange: #d45d2a; /* Terracotta/Earth */
+            --isha-dark: #333232;   /* Charcoal Slate */
+            --isha-sand: #f9f7f2;   /* Off-white/Cream */
+            --isha-text: #4a4a4a;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
-            color: #333;
-            line-height: 1.6;
+            font-family: 'Optima', 'Segoe UI', serif;
+            background-color: var(--isha-sand);
+            color: var(--isha-text);
+            line-height: 1.7;
             padding: 20px;
         }
+
         .briefing-card {
             max-width: 600px;
-            margin: 0 auto;
+            margin: 40px auto;
             background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            border-top: 8px solid #b8860b;
+            padding: 40px;
+            border-radius: 2px; /* Sharper, cleaner edges */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border-top: 5px solid var(--isha-orange);
         }
-        h1 { color: #8b4513; text-align: center; margin-bottom: 20px; }
+
+        h1 { 
+            color: var(--isha-dark); 
+            text-align: center; 
+            font-weight: 300; 
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+        }
+
         .step {
             display: flex;
             align-items: flex-start;
-            margin-bottom: 15px;
+            margin-bottom: 25px;
         }
+
         .step-number {
-            background: #b8860b;
-            color: white;
-            width: 28px;
-            height: 28px;
+            border: 1px solid var(--isha-orange);
+            color: var(--isha-orange);
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            margin-right: 12px;
+            font-size: 0.9em;
+            margin-right: 15px;
             flex-shrink: 0;
         }
+
         .important {
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 15px;
-            margin: 20px 0;
-            font-weight: 500;
+            background: #fffcf5;
+            border: 1px solid #eee;
+            padding: 20px;
+            margin: 25px 0;
+            font-style: italic;
+            border-left: 3px solid var(--isha-orange);
         }
+
         .start-btn {
             display: block;
             text-align: center;
-            background: #28a745;
+            background: var(--isha-dark);
             color: white;
             text-decoration: none;
-            padding: 18px;
-            border-radius: 10px;
-            font-weight: bold;
-            font-size: 1.2em;
-            margin-top: 30px;
-            box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
+            padding: 15px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            margin-top: 40px;
+            transition: background 0.3s;
         }
-        .start-btn:active { transform: scale(0.98); }
-        .wa-link { color: #25D366; font-weight: bold; text-decoration: none; }
+
+        .start-btn:hover {
+            background: var(--isha-orange);
+        }
+
+        strong { color: var(--isha-dark); }
     </style>
 </head>
 <body>
 
     <div class="briefing-card">
-        <h1>🏛️ Teacher Briefing</h1>
-        <p style="text-align: center; color: #666; margin-bottom: 25px;">Follow these steps to lead your students through the Chennakeshava Temple.</p>
-
+        <h1>Teacher Briefing</h1>
+        
         <div class="step">
             <div class="step-number">1</div>
-            <p><strong>Form Teams:</strong> Divide students into groups. You are the "Lead Explorer" for your group.</p>
+            <p><strong>Form Teams:</strong> Divide students into groups. One teacher per group acts as the Lead Explorer.</p>
         </div>
 
         <div class="step">
             <div class="step-number">2</div>
-            <p><strong>The Hunt:</strong> Read the clues aloud. Let students search the walls. They must <strong>point out</strong> the carving to you once found.</p>
+            <p><strong>The Hunt:</strong> Read the clues aloud. Encourage students to observe the silence and detail of the temple while they search.</p>
         </div>
 
         <div class="step">
-            <div class="step-number">3</div>
             <div class="important">
-                <strong>Critical Verification:</strong> Check the identification carefully. Only mark an item as "Completed" if the student has correctly identified the specific carving.
+                <strong>Verification:</strong> This is a journey of awareness. Ensure students have truly identified the correct carving before marking it complete.
             </div>
         </div>
 
         <div class="step">
-            <div class="step-number">4</div>
-            <p><strong>Progress:</strong> Your data saves automatically. Use the <strong>Reset</strong> button only if starting with a brand-new group.</p>
+            <div class="step-number">3</div>
+            <p><strong>Submission:</strong> Share the final team report via WhatsApp to <strong>Swami Taporati</strong> once the journey is complete.</p>
         </div>
 
-        <div class="step">
-            <div class="step-number">5</div>
-            <p><strong>Submission:</strong> Once the hunt is finished, click "Share" to send the team report to <span class="wa-link">Swami Taporati</span> via WhatsApp.</p>
-        </div>
-
-        <a href="https://swami-taporati.github.io/belur-hunt/index2.html" class="start-btn">🚀 Start the Scavenger Hunt</a>
+        <a href="https://swami-taporati.github.io/belur-hunt/index2.html" class="start-btn">Begin Exploration</a>
     </div>
 
 </body>
