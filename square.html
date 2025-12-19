@@ -1,195 +1,135 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Neon Jump: Level Up</title>
+    <title>Neon Jump: Tournament</title>
     <style>
-        body { margin: 0; background: #1a1a1a; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; color: white; font-family: 'Courier New', Courier, monospace; overflow: hidden; }
-        canvas { border: 3px solid #00ffcc; background: #000; box-shadow: 0 0 30px rgba(0, 255, 204, 0.3); cursor: pointer; }
-        .ui { margin-bottom: 15px; text-align: center; width: 800px; display: flex; justify-content: space-between; align-items: flex-end; }
-        .stat { background: #333; padding: 5px 15px; border-radius: 4px; border-bottom: 3px solid #00ffcc; }
-        #resetBtn { margin-top: 15px; padding: 12px 25px; background: #00ffcc; color: #000; border: none; border-radius: 5px; cursor: pointer; display: none; font-weight: bold; font-size: 1.2em; text-transform: uppercase; }
-        #resetBtn:hover { background: #fff; }
+        body { margin: 0; background: #0a0a0a; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; color: white; font-family: 'Segoe UI', sans-serif; }
+        canvas { border: 4px solid #7000ff; background: #000; box-shadow: 0 0 40px rgba(112, 0, 255, 0.4); cursor: pointer; }
+        .tournament-ui { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #7000ff; min-width: 150px; }
+        .stat-bar { width: 800px; display: flex; justify-content: space-between; margin-bottom: 10px; }
+        #overlay { position: absolute; background: rgba(0,0,0,0.8); width: 800px; height: 250px; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; }
+        input { padding: 8px; border-radius: 4px; border: none; margin-bottom: 10px; }
+        button { padding: 10px 20px; background: #7000ff; color: white; border: none; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="ui">
-        <div class="stat">SCORE: <span id="currentScore">0</span></div>
-        <div id="levelDisplay" style="color: #ff0055; font-weight: bold; font-size: 1.5em;">LEVEL 1</div>
-        <div class="stat">HIGH: <span id="highScore">0</span></div>
+
+    <div class="stat-bar">
+        <span>PLAYER: <strong id="nameTag">Guest</strong></span>
+        <span style="color: #00ffcc;">TOURNAMENT SEED: #GLOB-2025</span>
     </div>
-    
+
+    <div id="overlay">
+        <h2>ENTER TOURNAMENT</h2>
+        <input type="text" id="playerName" placeholder="Enter Nickname..." maxlength="10">
+        <button onclick="startTournament()">JOIN MATCH</button>
+    </div>
+
     <canvas id="gameCanvas"></canvas>
-    <button id="resetBtn" onclick="resetGame()">Restart Mission</button>
+
+    <div class="tournament-ui">
+        <h4 style="margin:0 0 10px 0">LEADERBOARD</h4>
+        <div id="leaderboardList" style="font-size: 0.8em; color: #aaa;">
+            1. ACE - 2450<br>
+            2. ZEUS - 1820<br>
+            3. TRON - 1200
+        </div>
+    </div>
 
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
-        const scoreEl = document.getElementById("currentScore");
-        const highEl = document.getElementById("highScore");
-        const levelEl = document.getElementById("levelDisplay");
-        const resetBtn = document.getElementById("resetBtn");
-
-        canvas.width = 800;
-        canvas.height = 250;
-
-        let score = 0;
-        let highScore = localStorage.getItem("neonLevelHigh") || 0;
-        highEl.innerText = highScore;
+        const nameTag = document.getElementById("nameTag");
+        const overlay = document.getElementById("overlay");
         
-        let gameActive = true;
+        canvas.width = 800; canvas.height = 250;
+        let gameActive = false;
+        let score = 0;
         let frame = 0;
         let obstacles = [];
         let gameSpeed = 6;
-        let currentLevel = 1;
-        
-        // Notification system
-        let announcementText = "";
-        let announcementTimer = 0;
 
-        const player = { x: 80, y: 200, size: 30, dy: 0, jumpForce: 13, gravity: 0.8, grounded: false };
-
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-        function playSound(freq, duration, type = "square") {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            if(type === "square") osc.frequency.exponentialRampToValueAtTime(freq * 2, audioCtx.currentTime + duration);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + duration);
+        // SEED-BASED RANDOMNESS (Pseudo-random)
+        // This ensures every player gets the same obstacles for the tournament
+        let seed = 12345; 
+        function seededRandom() {
+            seed = (seed * 9301 + 49297) % 233280;
+            return seed / 233280;
         }
 
-        function checkLevelUp() {
-            // Level up every 500 distance units (roughly every 5-10 obstacles)
-            let newLevel = Math.floor(frame / 600) + 1;
-            if (newLevel > currentLevel) {
-                currentLevel = newLevel;
-                levelEl.innerText = `LEVEL ${currentLevel}`;
-                announcementText = "LEVEL UP! SPEED INCREASED";
-                announcementTimer = 100; // Show for 100 frames
-                score += 50; // Level up bonus
-                playSound(600, 0.3, "sine"); // Level up chime
-            }
+        function startTournament() {
+            const name = document.getElementById("playerName").value;
+            if(!name) return alert("Enter a name!");
+            nameTag.innerText = name.toUpperCase();
+            overlay.style.display = "none";
+            gameActive = true;
+            resetGame();
         }
 
         function spawnObstacle() {
-            let spawnRate = Math.max(35, 90 - (currentLevel * 5));
-            if (frame % spawnRate === 0) {
-                let hue = Math.max(0, 340 - (currentLevel * 20));
-                obstacles.push({
-                    x: canvas.width,
-                    width: 25,
-                    height: 30 + Math.random() * 50,
-                    color: `hsl(${hue}, 100%, 60%)`,
-                    passed: false,
-                    points: 5 + (currentLevel * 2) 
-                });
+            if (frame % 80 === 0) {
+                // Use seededRandom instead of Math.random
+                let height = 30 + seededRandom() * 60;
+                obstacles.push({ x: canvas.width, width: 20, height: height, passed: false });
             }
         }
 
         function update() {
             if (!gameActive) return;
-
-            gameSpeed = 5 + (currentLevel * 1.2);
+            gameSpeed += 0.001;
+            
+            // Player logic (Simplified for this example)
             player.dy += player.gravity;
             player.y += player.dy;
+            if (player.y + 30 > canvas.height) { player.y = canvas.height - 30; player.dy = 0; player.grounded = true; }
 
-            if (player.y + player.size > canvas.height) {
-                player.y = canvas.height - player.size;
-                player.dy = 0;
-                player.grounded = true;
-            }
-
-            for (let i = obstacles.length - 1; i >= 0; i--) {
-                let obs = obstacles[i];
+            obstacles.forEach((obs, i) => {
                 obs.x -= gameSpeed;
-
-                if (!obs.passed && obs.x < player.x) {
-                    score += obs.points;
-                    obs.passed = true;
-                    scoreEl.innerText = score;
+                if (!obs.passed && obs.x < 80) { score += 10; obs.passed = true; }
+                if (80 < obs.x + obs.width && 80 + 30 > obs.x && player.y + 30 > canvas.height - obs.height) {
+                    gameActive = false;
+                    overlay.style.display = "flex";
+                    document.querySelector("h2").innerText = "MATCH OVER: " + score;
+                    updateLeaderboard(nameTag.innerText, score);
                 }
-
-                if (player.x < obs.x + obs.width && player.x + player.size > obs.x &&
-                    player.y + player.size > canvas.height - obs.height) {
-                    gameOver();
-                }
-                if (obs.x + obs.width < 0) obstacles.splice(i, 1);
-            }
-
+            });
             frame++;
-            checkLevelUp();
             spawnObstacle();
         }
 
+        function updateLeaderboard(name, finalScore) {
+            // In a real tournament, you would send 'finalScore' to a database here.
+            // For now, we update the local UI list.
+            const list = document.getElementById("leaderboardList");
+            list.innerHTML = `1. ${name} - ${finalScore}<br>` + list.innerHTML;
+        }
+
+        const player = { y: 200, dy: 0, gravity: 0.8, grounded: false };
+        
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#7000ff";
+            ctx.fillRect(80, player.y, 30, 30); // Player
             
-            // Draw Player with trail effect
-            ctx.fillStyle = "#fff";
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = "#00ffcc";
-            ctx.fillRect(player.x, player.y, player.size, player.size);
-
-            // Draw Obstacles
-            obstacles.forEach(obs => {
-                ctx.fillStyle = obs.color;
-                ctx.shadowColor = obs.color;
-                ctx.fillRect(obs.x, canvas.height - obs.height, obs.width, obs.height);
-            });
-
-            // Draw Announcement
-            if (announcementTimer > 0) {
-                ctx.shadowBlur = 0;
-                ctx.fillStyle = `rgba(255, 255, 255, ${announcementTimer / 100})`;
-                ctx.font = "bold 30px Courier New";
-                ctx.textAlign = "center";
-                ctx.fillText(announcementText, canvas.width/2, canvas.height/2);
-                announcementTimer--;
-            }
-
-            ctx.shadowBlur = 0;
+            ctx.fillStyle = "#ff00cc";
+            obstacles.forEach(obs => ctx.fillRect(obs.x, canvas.height - obs.height, obs.width, obs.height));
+            
+            ctx.fillStyle = "white";
+            ctx.fillText("SCORE: " + score, 20, 30);
+            
             update();
-            if (gameActive) requestAnimationFrame(draw);
+            requestAnimationFrame(draw);
         }
 
-        function gameOver() {
-            gameActive = false;
-            playSound(100, 0.5, "sawtooth"); // Game over sound
-            resetBtn.style.display = "block";
-            if (score > highScore) {
-                highScore = score;
-                localStorage.setItem("neonLevelHigh", highScore);
-                highEl.innerText = highScore;
-            }
-        }
+        window.addEventListener("keydown", (e) => {
+            if (e.code === "Space" && player.grounded) { player.dy = -12; player.grounded = false; }
+        });
+
+        draw();
 
         function resetGame() {
-            score = 0; scoreEl.innerText = 0;
-            obstacles = []; frame = 0; currentLevel = 1;
-            levelEl.innerText = "LEVEL 1";
-            player.y = 200; player.dy = 0;
-            gameActive = true; resetBtn.style.display = "none";
-            draw();
+            score = 0; frame = 0; obstacles = []; gameSpeed = 6; seed = 12345;
         }
-
-        function handleJump() {
-            if (player.grounded && gameActive) {
-                player.dy = -player.jumpForce;
-                player.grounded = false;
-                playSound(200, 0.1, "square");
-            }
-        }
-
-        window.addEventListener("keydown", (e) => { if (e.code === "Space") handleJump(); });
-        canvas.addEventListener("mousedown", handleJump);
-        draw();
     </script>
 </body>
 </html>
