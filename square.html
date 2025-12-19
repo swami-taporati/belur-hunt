@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Neon Jump</title>
+    <style>
+        body { margin: 0; background: #1a1a1a; display: flex; justify-content: center; align-items: center; height: 100vh; color: white; font-family: sans-serif; overflow: hidden; }
+        canvas { border: 2px solid #00ffcc; background: #000; box-shadow: 0 0 20px #00ffcc; }
+        .info { position: absolute; top: 10px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="info">Press SPACE or TAP to Jump</div>
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        canvas.width = 800;
+        canvas.height = 200;
+
+        let score = 0;
+        let gameActive = true;
+
+        const player = { x: 50, y: 150, size: 30, dy: 0, jumpForce: 12, gravity: 0.6, grounded: false };
+        const obstacles = [];
+        let frame = 0;
+
+        function drawPlayer() {
+            ctx.fillStyle = "#00ffcc";
+            ctx.fillRect(player.x, player.y, player.size, player.size);
+        }
+
+        function createObstacle() {
+            if (frame % 70 === 0) {
+                obstacles.push({ x: canvas.width, size: 20 + Math.random() * 30 });
+            }
+        }
+
+        function update() {
+            if (!gameActive) return;
+
+            // Physics
+            player.dy += player.gravity;
+            player.y += player.dy;
+
+            if (player.y + player.size > canvas.height) {
+                player.y = canvas.height - player.size;
+                player.dy = 0;
+                player.grounded = true;
+            }
+
+            // Obstacles
+            obstacles.forEach((obs, i) => {
+                obs.x -= 6;
+                if (obs.x + obs.size < 0) {
+                    obstacles.splice(i, 1);
+                    score++;
+                }
+
+                // Collision detection
+                if (player.x < obs.x + obs.size && player.x + player.size > obs.x &&
+                    player.y < canvas.height && player.y + player.size > canvas.height - obs.size) {
+                    gameActive = false;
+                    alert("Game Over! Score: " + score);
+                    location.reload();
+                }
+            });
+
+            frame++;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawPlayer();
+            ctx.fillStyle = "#ff0055";
+            obstacles.forEach(obs => ctx.fillRect(obs.x, canvas.height - obs.size, obs.size, obs.size));
+            
+            ctx.fillStyle = "white";
+            ctx.fillText("Score: " + score, 20, 30);
+            
+            update();
+            requestAnimationFrame(draw);
+        }
+
+        window.addEventListener("keydown", (e) => {
+            if (e.code === "Space" && player.grounded) {
+                player.dy = -player.jumpForce;
+                player.grounded = false;
+            }
+        });
+
+        canvas.addEventListener("touchstart", () => {
+            if (player.grounded) {
+                player.dy = -player.jumpForce;
+                player.grounded = false;
+            }
+        });
+
+        draw();
+    </script>
+</body>
+</html>
