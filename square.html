@@ -1,102 +1,177 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Neon Jump</title>
+    <title>Neon Jump Pro</title>
     <style>
-        body { margin: 0; background: #1a1a1a; display: flex; justify-content: center; align-items: center; height: 100vh; color: white; font-family: sans-serif; overflow: hidden; }
-        canvas { border: 2px solid #00ffcc; background: #000; box-shadow: 0 0 20px #00ffcc; }
-        .info { position: absolute; top: 10px; text-align: center; }
+        body { margin: 0; background: #1a1a1a; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; }
+        canvas { border: 3px solid #00ffcc; background: #000; box-shadow: 0 0 20px #00ffcc; cursor: pointer; }
+        .ui { margin-bottom: 10px; text-align: center; }
+        #resetBtn { margin-top: 15px; padding: 10px 20px; background: #ff0055; color: white; border: none; border-radius: 5px; cursor: pointer; display: none; font-weight: bold; }
+        #resetBtn:hover { background: #ff3377; }
     </style>
 </head>
 <body>
-    <div class="info">Press SPACE or TAP to Jump</div>
+    <div class="ui">
+        <div>Score: <span id="currentScore">0</span> | High Score: <span id="highScore">0</span></div>
+        <div style="font-size: 0.8em; color: #888;">Press SPACE or Click to Jump</div>
+    </div>
+    
     <canvas id="gameCanvas"></canvas>
+    <button id="resetBtn" onclick="resetGame()">Try Again</button>
 
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
+        const scoreEl = document.getElementById("currentScore");
+        const highEl = document.getElementById("highScore");
+        const resetBtn = document.getElementById("resetBtn");
 
         canvas.width = 800;
-        canvas.height = 200;
+        canvas.height = 250;
 
+        // Game State
         let score = 0;
+        let highScore = localStorage.getItem("neonJumpHigh") || 0;
+        highEl.innerText = highScore;
         let gameActive = true;
-
-        const player = { x: 50, y: 150, size: 30, dy: 0, jumpForce: 12, gravity: 0.6, grounded: false };
-        const obstacles = [];
         let frame = 0;
+        let obstacles = [];
 
-        function drawPlayer() {
-            ctx.fillStyle = "#00ffcc";
-            ctx.fillRect(player.x, player.y, player.size, player.size);
-        }
+        const player = {
+            x: 80,
+            y: 200,
+            size: 30,
+            dy: 0,
+            jumpForce: 13,
+            gravity: 0.8,
+            grounded: false
+        };
 
-        function createObstacle() {
-            if (frame % 70 === 0) {
-                obstacles.push({ x: canvas.width, size: 20 + Math.random() * 30 });
+        function spawnObstacle() {
+            // Spawns an obstacle every 100 frames
+            if (frame % 100 === 0) {
+                obstacles.push({
+                    x: canvas.width,
+                    width: 25,
+                    height: 30 + Math.random() * 40,
+                    passed: false
+                });
             }
         }
 
         function update() {
             if (!gameActive) return;
 
-            // Physics
+            // Player Physics
             player.dy += player.gravity;
             player.y += player.dy;
 
+            // Floor collision
             if (player.y + player.size > canvas.height) {
                 player.y = canvas.height - player.size;
                 player.dy = 0;
                 player.grounded = true;
             }
 
-            // Obstacles
-            obstacles.forEach((obs, i) => {
-                obs.x -= 6;
-                if (obs.x + obs.size < 0) {
-                    obstacles.splice(i, 1);
+            // Obstacle Logic
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                let obs = obstacles[i];
+                obs.x -= 6; // Speed
+
+                // Scoring: If player passes the obstacle
+                if (!obs.passed && obs.x < player.x) {
                     score++;
+                    obs.passed = true;
+                    scoreEl.innerText = score;
                 }
 
-                // Collision detection
-                if (player.x < obs.x + obs.size && player.x + player.size > obs.x &&
-                    player.y < canvas.height && player.y + player.size > canvas.height - obs.size) {
-                    gameActive = false;
-                    alert("Game Over! Score: " + score);
-                    location.reload();
+                // Collision Detection
+                if (
+                    player.x < obs.x + obs.width &&
+                    player.x + player.size > obs.x &&
+                    player.y + player.size > canvas.height - obs.height
+                ) {
+                    gameOver();
                 }
-            });
+
+                // Remove off-screen obstacles
+                if (obs.x + obs.width < 0) {
+                    obstacles.splice(i, 1);
+                }
+            }
 
             frame++;
+            spawnObstacle();
         }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawPlayer();
+
+            // Draw Ground Line
+            ctx.strokeStyle = "#444";
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height);
+            ctx.lineTo(canvas.width, canvas.height);
+            ctx.stroke();
+
+            // Draw Player
+            ctx.fillStyle = "#00ffcc";
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = "#00ffcc";
+            ctx.fillRect(player.x, player.y, player.size, player.size);
+
+            // Draw Obstacles
             ctx.fillStyle = "#ff0055";
-            obstacles.forEach(obs => ctx.fillRect(obs.x, canvas.height - obs.size, obs.size, obs.size));
-            
-            ctx.fillStyle = "white";
-            ctx.fillText("Score: " + score, 20, 30);
-            
+            ctx.shadowColor = "#ff0055";
+            obstacles.forEach(obs => {
+                ctx.fillRect(obs.x, canvas.height - obs.height, obs.width, obs.height);
+            });
+
+            // Reset shadow for performance
+            ctx.shadowBlur = 0;
+
             update();
-            requestAnimationFrame(draw);
+            if (gameActive) {
+                requestAnimationFrame(draw);
+            }
         }
 
-        window.addEventListener("keydown", (e) => {
-            if (e.code === "Space" && player.grounded) {
+        function gameOver() {
+            gameActive = false;
+            resetBtn.style.display = "block";
+            
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem("neonJumpHigh", highScore);
+                highEl.innerText = highScore;
+            }
+        }
+
+        function resetGame() {
+            score = 0;
+            scoreEl.innerText = 0;
+            obstacles = [];
+            frame = 0;
+            player.y = 200;
+            player.dy = 0;
+            gameActive = true;
+            resetBtn.style.display = "none";
+            draw();
+        }
+
+        function handleJump() {
+            if (player.grounded && gameActive) {
                 player.dy = -player.jumpForce;
                 player.grounded = false;
             }
-        });
+        }
 
-        canvas.addEventListener("touchstart", () => {
-            if (player.grounded) {
-                player.dy = -player.jumpForce;
-                player.grounded = false;
-            }
-        });
+        // Controls
+        window.addEventListener("keydown", (e) => { if (e.code === "Space") handleJump(); });
+        canvas.addEventListener("mousedown", handleJump);
+        canvas.addEventListener("touchstart", (e) => { e.preventDefault(); handleJump(); });
 
+        // Start
         draw();
     </script>
 </body>
