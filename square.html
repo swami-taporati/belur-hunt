@@ -1,60 +1,94 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Neon Jump Pro</title>
+    <title>Neon Jump: Level Up</title>
     <style>
-        body { margin: 0; background: #1a1a1a; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; }
-        canvas { border: 3px solid #00ffcc; background: #000; box-shadow: 0 0 20px #00ffcc; cursor: pointer; }
-        .ui { margin-bottom: 10px; text-align: center; }
-        #resetBtn { margin-top: 15px; padding: 10px 20px; background: #ff0055; color: white; border: none; border-radius: 5px; cursor: pointer; display: none; font-weight: bold; }
-        #resetBtn:hover { background: #ff3377; }
+        body { margin: 0; background: #1a1a1a; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; color: white; font-family: 'Courier New', Courier, monospace; overflow: hidden; }
+        canvas { border: 3px solid #00ffcc; background: #000; box-shadow: 0 0 30px rgba(0, 255, 204, 0.3); cursor: pointer; }
+        .ui { margin-bottom: 15px; text-align: center; width: 800px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .stat { background: #333; padding: 5px 15px; border-radius: 4px; border-bottom: 3px solid #00ffcc; }
+        #resetBtn { margin-top: 15px; padding: 12px 25px; background: #00ffcc; color: #000; border: none; border-radius: 5px; cursor: pointer; display: none; font-weight: bold; font-size: 1.2em; text-transform: uppercase; }
+        #resetBtn:hover { background: #fff; }
     </style>
 </head>
 <body>
     <div class="ui">
-        <div>Score: <span id="currentScore">0</span> | High Score: <span id="highScore">0</span></div>
-        <div style="font-size: 0.8em; color: #888;">Press SPACE or Click to Jump</div>
+        <div class="stat">SCORE: <span id="currentScore">0</span></div>
+        <div id="levelDisplay" style="color: #ff0055; font-weight: bold; font-size: 1.5em;">LEVEL 1</div>
+        <div class="stat">HIGH: <span id="highScore">0</span></div>
     </div>
     
     <canvas id="gameCanvas"></canvas>
-    <button id="resetBtn" onclick="resetGame()">Try Again</button>
+    <button id="resetBtn" onclick="resetGame()">Restart Mission</button>
 
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
         const scoreEl = document.getElementById("currentScore");
         const highEl = document.getElementById("highScore");
+        const levelEl = document.getElementById("levelDisplay");
         const resetBtn = document.getElementById("resetBtn");
 
         canvas.width = 800;
         canvas.height = 250;
 
-        // Game State
         let score = 0;
-        let highScore = localStorage.getItem("neonJumpHigh") || 0;
+        let highScore = localStorage.getItem("neonLevelHigh") || 0;
         highEl.innerText = highScore;
+        
         let gameActive = true;
         let frame = 0;
         let obstacles = [];
+        let gameSpeed = 6;
+        let currentLevel = 1;
+        
+        // Notification system
+        let announcementText = "";
+        let announcementTimer = 0;
 
-        const player = {
-            x: 80,
-            y: 200,
-            size: 30,
-            dy: 0,
-            jumpForce: 13,
-            gravity: 0.8,
-            grounded: false
-        };
+        const player = { x: 80, y: 200, size: 30, dy: 0, jumpForce: 13, gravity: 0.8, grounded: false };
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(freq, duration, type = "square") {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            if(type === "square") osc.frequency.exponentialRampToValueAtTime(freq * 2, audioCtx.currentTime + duration);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function checkLevelUp() {
+            // Level up every 500 distance units (roughly every 5-10 obstacles)
+            let newLevel = Math.floor(frame / 600) + 1;
+            if (newLevel > currentLevel) {
+                currentLevel = newLevel;
+                levelEl.innerText = `LEVEL ${currentLevel}`;
+                announcementText = "LEVEL UP! SPEED INCREASED";
+                announcementTimer = 100; // Show for 100 frames
+                score += 50; // Level up bonus
+                playSound(600, 0.3, "sine"); // Level up chime
+            }
+        }
 
         function spawnObstacle() {
-            // Spawns an obstacle every 100 frames
-            if (frame % 100 === 0) {
+            let spawnRate = Math.max(35, 90 - (currentLevel * 5));
+            if (frame % spawnRate === 0) {
+                let hue = Math.max(0, 340 - (currentLevel * 20));
                 obstacles.push({
                     x: canvas.width,
                     width: 25,
-                    height: 30 + Math.random() * 40,
-                    passed: false
+                    height: 30 + Math.random() * 50,
+                    color: `hsl(${hue}, 100%, 60%)`,
+                    passed: false,
+                    points: 5 + (currentLevel * 2) 
                 });
             }
         }
@@ -62,100 +96,86 @@
         function update() {
             if (!gameActive) return;
 
-            // Player Physics
+            gameSpeed = 5 + (currentLevel * 1.2);
             player.dy += player.gravity;
             player.y += player.dy;
 
-            // Floor collision
             if (player.y + player.size > canvas.height) {
                 player.y = canvas.height - player.size;
                 player.dy = 0;
                 player.grounded = true;
             }
 
-            // Obstacle Logic
             for (let i = obstacles.length - 1; i >= 0; i--) {
                 let obs = obstacles[i];
-                obs.x -= 6; // Speed
+                obs.x -= gameSpeed;
 
-                // Scoring: If player passes the obstacle
                 if (!obs.passed && obs.x < player.x) {
-                    score++;
+                    score += obs.points;
                     obs.passed = true;
                     scoreEl.innerText = score;
                 }
 
-                // Collision Detection
-                if (
-                    player.x < obs.x + obs.width &&
-                    player.x + player.size > obs.x &&
-                    player.y + player.size > canvas.height - obs.height
-                ) {
+                if (player.x < obs.x + obs.width && player.x + player.size > obs.x &&
+                    player.y + player.size > canvas.height - obs.height) {
                     gameOver();
                 }
-
-                // Remove off-screen obstacles
-                if (obs.x + obs.width < 0) {
-                    obstacles.splice(i, 1);
-                }
+                if (obs.x + obs.width < 0) obstacles.splice(i, 1);
             }
 
             frame++;
+            checkLevelUp();
             spawnObstacle();
         }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Draw Ground Line
-            ctx.strokeStyle = "#444";
-            ctx.beginPath();
-            ctx.moveTo(0, canvas.height);
-            ctx.lineTo(canvas.width, canvas.height);
-            ctx.stroke();
-
-            // Draw Player
-            ctx.fillStyle = "#00ffcc";
+            
+            // Draw Player with trail effect
+            ctx.fillStyle = "#fff";
             ctx.shadowBlur = 15;
             ctx.shadowColor = "#00ffcc";
             ctx.fillRect(player.x, player.y, player.size, player.size);
 
             // Draw Obstacles
-            ctx.fillStyle = "#ff0055";
-            ctx.shadowColor = "#ff0055";
             obstacles.forEach(obs => {
+                ctx.fillStyle = obs.color;
+                ctx.shadowColor = obs.color;
                 ctx.fillRect(obs.x, canvas.height - obs.height, obs.width, obs.height);
             });
 
-            // Reset shadow for performance
-            ctx.shadowBlur = 0;
-
-            update();
-            if (gameActive) {
-                requestAnimationFrame(draw);
+            // Draw Announcement
+            if (announcementTimer > 0) {
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = `rgba(255, 255, 255, ${announcementTimer / 100})`;
+                ctx.font = "bold 30px Courier New";
+                ctx.textAlign = "center";
+                ctx.fillText(announcementText, canvas.width/2, canvas.height/2);
+                announcementTimer--;
             }
+
+            ctx.shadowBlur = 0;
+            update();
+            if (gameActive) requestAnimationFrame(draw);
         }
 
         function gameOver() {
             gameActive = false;
+            playSound(100, 0.5, "sawtooth"); // Game over sound
             resetBtn.style.display = "block";
-            
             if (score > highScore) {
                 highScore = score;
-                localStorage.setItem("neonJumpHigh", highScore);
+                localStorage.setItem("neonLevelHigh", highScore);
                 highEl.innerText = highScore;
             }
         }
 
         function resetGame() {
-            score = 0;
-            scoreEl.innerText = 0;
-            obstacles = [];
-            frame = 0;
-            player.y = 200;
-            player.dy = 0;
-            gameActive = true;
-            resetBtn.style.display = "none";
+            score = 0; scoreEl.innerText = 0;
+            obstacles = []; frame = 0; currentLevel = 1;
+            levelEl.innerText = "LEVEL 1";
+            player.y = 200; player.dy = 0;
+            gameActive = true; resetBtn.style.display = "none";
             draw();
         }
 
@@ -163,15 +183,12 @@
             if (player.grounded && gameActive) {
                 player.dy = -player.jumpForce;
                 player.grounded = false;
+                playSound(200, 0.1, "square");
             }
         }
 
-        // Controls
         window.addEventListener("keydown", (e) => { if (e.code === "Space") handleJump(); });
         canvas.addEventListener("mousedown", handleJump);
-        canvas.addEventListener("touchstart", (e) => { e.preventDefault(); handleJump(); });
-
-        // Start
         draw();
     </script>
 </body>
